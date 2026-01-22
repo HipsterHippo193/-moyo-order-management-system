@@ -54,7 +54,7 @@ class OrderControllerIntegrationTest {
             .andExpect(jsonPath("$.orderId").exists())
             .andExpect(jsonPath("$.productId").value(1))
             .andExpect(jsonPath("$.quantity").value(10))
-            .andExpect(jsonPath("$.allocatedTo").value(2))  // Vendor B - lowest price with stock ($45)
+            .andExpect(jsonPath("$.allocatedVendorId").value(2))  // Vendor B - lowest price with stock ($45)
             .andExpect(jsonPath("$.status").value("ALLOCATED"))
             .andExpect(jsonPath("$.createdAt").exists());
     }
@@ -198,7 +198,7 @@ class OrderControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.allocatedTo").value(2));  // Vendor B
+            .andExpect(jsonPath("$.allocatedVendorId").value(2));  // Vendor B
 
         // Verify stock was decremented
         int newStock = vendorProductRepository
@@ -222,7 +222,7 @@ class OrderControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.allocatedTo").value(1))  // Vendor A (has 100 stock)
+            .andExpect(jsonPath("$.allocatedVendorId").value(1))  // Vendor A (has 100 stock)
             .andExpect(jsonPath("$.status").value("ALLOCATED"));
     }
 
@@ -373,7 +373,7 @@ class OrderControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson1))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.allocatedTo").value(2));  // Vendor B
+            .andExpect(jsonPath("$.allocatedVendorId").value(2));  // Vendor B
 
         // Verify Vendor B stock is now 10
         int vendorBStock = vendorProductRepository
@@ -392,7 +392,7 @@ class OrderControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson2))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.allocatedTo").value(1));  // Vendor A
+            .andExpect(jsonPath("$.allocatedVendorId").value(1));  // Vendor A
 
         // Verify Vendor A stock is now 80
         int vendorAStock = vendorProductRepository
@@ -417,7 +417,7 @@ class OrderControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.allocatedTo").value(2));  // Allocated to Vendor B
+            .andExpect(jsonPath("$.allocatedVendorId").value(2));  // Allocated to Vendor B
 
         // Now Vendor B should see the order when they GET /api/orders
         String vendorBToken = jwtTokenProvider.generateToken(2L, "vendor-b");
@@ -427,7 +427,7 @@ class OrderControllerIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].allocatedTo").value(2))
+            .andExpect(jsonPath("$[0].allocatedVendorId").value(2))
             .andExpect(jsonPath("$[0].productId").value(1))
             .andExpect(jsonPath("$[0].quantity").value(10))
             .andExpect(jsonPath("$[0].status").value("ALLOCATED"));
@@ -498,7 +498,7 @@ class OrderControllerIntegrationTest {
                     {"productId": 1, "quantity": 10}
                     """))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.allocatedTo").value(2));  // Allocated to Vendor B
+            .andExpect(jsonPath("$.allocatedVendorId").value(2));  // Allocated to Vendor B
 
         // Vendor A should NOT see the order (it was allocated to Vendor B)
         String vendorAToken = jwtTokenProvider.generateToken(1L, "vendor-a");
@@ -527,17 +527,17 @@ class OrderControllerIntegrationTest {
         // Extract orderId from response
         String responseJson = createResult.getResponse().getContentAsString();
         Long orderId = JsonPath.parse(responseJson).read("$.orderId", Long.class);
-        Long allocatedTo = JsonPath.parse(responseJson).read("$.allocatedTo", Long.class);
+        Long allocatedVendorId = JsonPath.parse(responseJson).read("$.allocatedVendorId", Long.class);
 
         // Now the allocated vendor should be able to get order details
-        String vendorToken = jwtTokenProvider.generateToken(allocatedTo, "vendor-b");
+        String vendorToken = jwtTokenProvider.generateToken(allocatedVendorId, "vendor-b");
         mockMvc.perform(get("/api/orders/" + orderId)
                 .header("Authorization", "Bearer " + vendorToken))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.orderId").value(orderId))
             .andExpect(jsonPath("$.productId").value(1))
             .andExpect(jsonPath("$.quantity").value(10))
-            .andExpect(jsonPath("$.allocatedTo").value(allocatedTo))
+            .andExpect(jsonPath("$.allocatedVendorId").value(allocatedVendorId))
             .andExpect(jsonPath("$.status").value("ALLOCATED"))
             .andExpect(jsonPath("$.createdAt").exists());
     }

@@ -11,7 +11,11 @@ import java.math.BigDecimal;
 public class PriceUpdateResponse {
     private Long productId;
     private String productCode;
-    private String name;
+    private String productName;
+    private Long vendorId;
+    private String vendorName;
+    private BigDecimal oldPrice;
     private BigDecimal newPrice;
+    private Integer currentStock;
     private String updatedAt;
 }

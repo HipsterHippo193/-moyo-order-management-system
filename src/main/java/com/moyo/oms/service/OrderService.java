@@ -24,6 +24,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final AllocationService allocationService;
+    private final com.moyo.oms.repository.VendorProductRepository vendorProductRepository;
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
@@ -77,11 +78,31 @@ public class OrderService {
     }
 
     private OrderResponse toOrderResponse(Order order) {
+        // Fetch product details
+        Product product = productRepository.findById(order.getProductId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "Product not found: productId=" + order.getProductId()));
+
+        // Fetch vendor product details to get price and vendor name
+        com.moyo.oms.model.VendorProduct vendorProduct = vendorProductRepository
+            .findByVendorIdAndProductIdWithProduct(order.getAllocatedVendorId(), order.getProductId())
+            .orElseThrow(() -> new ResourceNotFoundException(
+                "VendorProduct not found: vendorId=" + order.getAllocatedVendorId() +
+                ", productId=" + order.getProductId()));
+
+        // Calculate total price
+        java.math.BigDecimal totalPrice = vendorProduct.getPrice()
+            .multiply(java.math.BigDecimal.valueOf(order.getQuantity()));
+
         return new OrderResponse(
             order.getId(),
             order.getProductId(),
+            product.getName(),
             order.getQuantity(),
             order.getAllocatedVendorId(),
+            vendorProduct.getVendor().getName(),
+            vendorProduct.getPrice(),
+            totalPrice,
             order.getStatus(),
             order.getCreatedAt() != null
                 ? order.getCreatedAt().toString()

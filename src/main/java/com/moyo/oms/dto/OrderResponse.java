@@ -11,8 +11,12 @@ public class OrderResponse {
 
     private Long orderId;
     private Long productId;
+    private String productName;
     private Integer quantity;
-    private Long allocatedTo;  // null if no allocation
+    private Long allocatedVendorId;
+    private String allocatedVendorName;
+    private java.math.BigDecimal price;
+    private java.math.BigDecimal totalPrice;
     private String status;
     private String createdAt;  // ISO 8601 format
 }

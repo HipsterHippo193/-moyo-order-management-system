@@ -71,7 +71,7 @@ class VendorControllerIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(1))
             .andExpect(jsonPath("$.productCode").value("widget-001"))
-            .andExpect(jsonPath("$.name").value("Widget"))
+            .andExpect(jsonPath("$.productName").value("Widget"))
             .andExpect(jsonPath("$.newPrice").value(55.00))
             .andExpect(jsonPath("$.updatedAt").exists());
     }
@@ -311,7 +311,7 @@ class VendorControllerIntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(1))
             .andExpect(jsonPath("$.productCode").value("widget-001"))
-            .andExpect(jsonPath("$.name").value("Widget"))
+            .andExpect(jsonPath("$.productName").value("Widget"))
             .andExpect(jsonPath("$.newStock").value(150))
             .andExpect(jsonPath("$.updatedAt").exists());
     }

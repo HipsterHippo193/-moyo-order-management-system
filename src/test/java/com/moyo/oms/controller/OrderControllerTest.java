@@ -45,7 +45,8 @@ class OrderControllerTest {
     void createOrder_withValidData_returns201AndOrderResponse() throws Exception {
         // Given
         OrderRequest request = new OrderRequest(1L, 10);
-        OrderResponse response = new OrderResponse(1L, 1L, 10, 2L, "ALLOCATED", "2026-01-20T14:30:00");
+        OrderResponse response = new OrderResponse(1L, 1L, "Widget", 10, 2L, "Vendor Beta",
+            new java.math.BigDecimal("45.00"), new java.math.BigDecimal("450.00"), "ALLOCATED", "2026-01-20T14:30:00");
 
         when(orderService.createOrder(any(OrderRequest.class))).thenReturn(response);
 
@@ -56,8 +57,12 @@ class OrderControllerTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.orderId").value(1))
             .andExpect(jsonPath("$.productId").value(1))
+            .andExpect(jsonPath("$.productName").value("Widget"))
             .andExpect(jsonPath("$.quantity").value(10))
-            .andExpect(jsonPath("$.allocatedTo").value(2))
+            .andExpect(jsonPath("$.allocatedVendorId").value(2))
+            .andExpect(jsonPath("$.allocatedVendorName").value("Vendor Beta"))
+            .andExpect(jsonPath("$.price").value(45.00))
+            .andExpect(jsonPath("$.totalPrice").value(450.00))
             .andExpect(jsonPath("$.status").value("ALLOCATED"))
             .andExpect(jsonPath("$.createdAt").exists());
     }
@@ -143,7 +148,8 @@ class OrderControllerTest {
     void createOrder_withValidDataButNoAllocation_returns201WithPendingStatus() throws Exception {
         // Given
         OrderRequest request = new OrderRequest(1L, 1000);
-        OrderResponse response = new OrderResponse(1L, 1L, 1000, null, "PENDING", "2026-01-20T14:30:00");
+        OrderResponse response = new OrderResponse(1L, 1L, "Widget", 1000, null, null,
+            null, null, "PENDING", "2026-01-20T14:30:00");
 
         when(orderService.createOrder(any(OrderRequest.class))).thenReturn(response);
 
@@ -153,7 +159,7 @@ class OrderControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.orderId").value(1))
-            .andExpect(jsonPath("$.allocatedTo").doesNotExist())
+            .andExpect(jsonPath("$.allocatedVendorId").doesNotExist())
             .andExpect(jsonPath("$.status").value("PENDING"));
     }
 

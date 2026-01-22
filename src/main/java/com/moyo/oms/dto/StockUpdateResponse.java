@@ -10,7 +10,11 @@ import lombok.NoArgsConstructor;
 public class StockUpdateResponse {
     private Long productId;
     private String productCode;
-    private String name;
+    private String productName;
+    private Long vendorId;
+    private String vendorName;
+    private Integer oldStock;
     private Integer newStock;
+    private java.math.BigDecimal currentPrice;
     private String updatedAt;
 }

@@ -38,6 +38,7 @@ public class VendorService {
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Product not found for vendor: vendorId=" + vendorId + ", productId=" + productId));
 
+        java.math.BigDecimal oldPrice = vendorProduct.getPrice();
         vendorProduct.setPrice(request.getPrice());
         VendorProduct saved = vendorProductRepository.save(vendorProduct);
 
@@ -45,7 +46,11 @@ public class VendorService {
             saved.getProduct().getId(),
             saved.getProduct().getProductCode(),
             saved.getProduct().getName(),
+            saved.getVendor().getId(),
+            saved.getVendor().getName(),
+            oldPrice,
             saved.getPrice(),
+            saved.getStock(),
             Instant.now().toString()
         );
     }
@@ -57,6 +62,7 @@ public class VendorService {
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Product not found for vendor: vendorId=" + vendorId + ", productId=" + productId));
 
+        Integer oldStock = vendorProduct.getStock();
         vendorProduct.setStock(request.getStock());
         VendorProduct saved = vendorProductRepository.save(vendorProduct);
 
@@ -64,7 +70,11 @@ public class VendorService {
             saved.getProduct().getId(),
             saved.getProduct().getProductCode(),
             saved.getProduct().getName(),
+            saved.getVendor().getId(),
+            saved.getVendor().getName(),
+            oldStock,
             saved.getStock(),
+            saved.getPrice(),
             Instant.now().toString()
         );
     }

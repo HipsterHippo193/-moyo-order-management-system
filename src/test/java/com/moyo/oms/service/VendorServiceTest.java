@@ -103,7 +103,7 @@ class VendorServiceTest {
 
         assertThat(result.getProductId()).isEqualTo(1L);
         assertThat(result.getProductCode()).isEqualTo("widget-001");
-        assertThat(result.getName()).isEqualTo("Widget");
+        assertThat(result.getProductName()).isEqualTo("Widget");
         assertThat(result.getNewPrice()).isEqualTo(new BigDecimal("55.00"));
         assertThat(result.getUpdatedAt()).isNotNull();
 
@@ -164,7 +164,7 @@ class VendorServiceTest {
 
         assertThat(result.getProductId()).isEqualTo(1L);
         assertThat(result.getProductCode()).isEqualTo("widget-001");
-        assertThat(result.getName()).isEqualTo("Widget");
+        assertThat(result.getProductName()).isEqualTo("Widget");
         assertThat(result.getNewStock()).isEqualTo(150);
         assertThat(result.getUpdatedAt()).isNotNull();
 

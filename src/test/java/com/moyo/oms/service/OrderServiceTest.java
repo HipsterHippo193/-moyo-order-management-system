@@ -40,6 +40,9 @@ class OrderServiceTest {
     @Mock
     private AllocationService allocationService;
 
+    @Mock
+    private com.moyo.oms.repository.VendorProductRepository vendorProductRepository;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -58,9 +61,21 @@ class OrderServiceTest {
         // Given
         OrderRequest request = new OrderRequest(1L, 10);
 
+        // Setup vendor and vendor product for toOrderResponse
+        com.moyo.oms.model.Vendor vendor = new com.moyo.oms.model.Vendor();
+        vendor.setId(2L);
+        vendor.setName("Vendor Beta");
+
+        com.moyo.oms.model.VendorProduct vendorProduct = new com.moyo.oms.model.VendorProduct();
+        vendorProduct.setVendor(vendor);
+        vendorProduct.setProduct(testProduct);
+        vendorProduct.setPrice(new java.math.BigDecimal("45.00"));
+
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(allocationService.allocate(1L, 10))
             .thenReturn(new AllocationService.AllocationResult(2L, true));
+        when(vendorProductRepository.findByVendorIdAndProductIdWithProduct(2L, 1L))
+            .thenReturn(Optional.of(vendorProduct));
 
         Order savedOrder = new Order();
         savedOrder.setId(1L);
@@ -79,8 +94,12 @@ class OrderServiceTest {
         assertNotNull(response);
         assertEquals(1L, response.getOrderId());
         assertEquals(1L, response.getProductId());
+        assertEquals("Widget", response.getProductName());
         assertEquals(10, response.getQuantity());
-        assertEquals(2L, response.getAllocatedTo());
+        assertEquals(2L, response.getAllocatedVendorId());
+        assertEquals("Vendor Beta", response.getAllocatedVendorName());
+        assertEquals(new java.math.BigDecimal("45.00"), response.getPrice());
+        assertEquals(new java.math.BigDecimal("450.00"), response.getTotalPrice());
         assertEquals("ALLOCATED", response.getStatus());
         assertNotNull(response.getCreatedAt());
     }
@@ -104,9 +123,21 @@ class OrderServiceTest {
         // Given
         OrderRequest request = new OrderRequest(1L, 10);
 
+        // Setup vendor and vendor product for toOrderResponse
+        com.moyo.oms.model.Vendor vendor = new com.moyo.oms.model.Vendor();
+        vendor.setId(2L);
+        vendor.setName("Vendor Beta");
+
+        com.moyo.oms.model.VendorProduct vendorProduct = new com.moyo.oms.model.VendorProduct();
+        vendorProduct.setVendor(vendor);
+        vendorProduct.setProduct(testProduct);
+        vendorProduct.setPrice(new java.math.BigDecimal("45.00"));
+
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(allocationService.allocate(1L, 10))
             .thenReturn(new AllocationService.AllocationResult(2L, true));
+        when(vendorProductRepository.findByVendorIdAndProductIdWithProduct(2L, 1L))
+            .thenReturn(Optional.of(vendorProduct));
 
         Order savedOrder = new Order();
         savedOrder.setId(1L);
@@ -189,9 +220,21 @@ class OrderServiceTest {
         // Given
         OrderRequest request = new OrderRequest(1L, 25);
 
+        // Setup vendor and vendor product for toOrderResponse
+        com.moyo.oms.model.Vendor vendor = new com.moyo.oms.model.Vendor();
+        vendor.setId(2L);
+        vendor.setName("Vendor Beta");
+
+        com.moyo.oms.model.VendorProduct vendorProduct = new com.moyo.oms.model.VendorProduct();
+        vendorProduct.setVendor(vendor);
+        vendorProduct.setProduct(testProduct);
+        vendorProduct.setPrice(new java.math.BigDecimal("45.00"));
+
         when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
         when(allocationService.allocate(1L, 25))
             .thenReturn(new AllocationService.AllocationResult(2L, true));
+        when(vendorProductRepository.findByVendorIdAndProductIdWithProduct(2L, 1L))
+            .thenReturn(Optional.of(vendorProduct));
 
         Order savedOrder = new Order();
         savedOrder.setId(1L);
@@ -217,6 +260,16 @@ class OrderServiceTest {
         // Given - Vendor 2 has two orders
         Long vendorId = 2L;
 
+        // Setup vendor and vendor product for toOrderResponse
+        com.moyo.oms.model.Vendor vendor = new com.moyo.oms.model.Vendor();
+        vendor.setId(vendorId);
+        vendor.setName("Vendor Beta");
+
+        com.moyo.oms.model.VendorProduct vendorProduct = new com.moyo.oms.model.VendorProduct();
+        vendorProduct.setVendor(vendor);
+        vendorProduct.setProduct(testProduct);
+        vendorProduct.setPrice(new java.math.BigDecimal("45.00"));
+
         Order order1 = new Order();
         order1.setId(1L);
         order1.setProductId(1L);
@@ -235,6 +288,9 @@ class OrderServiceTest {
 
         when(orderRepository.findByAllocatedVendorIdOrderByCreatedAtDesc(vendorId))
             .thenReturn(Arrays.asList(order2, order1)); // Newest first
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(vendorProductRepository.findByVendorIdAndProductIdWithProduct(vendorId, 1L))
+            .thenReturn(Optional.of(vendorProduct));
 
         // When
         List<OrderResponse> responses = orderService.getVendorOrders(vendorId);
@@ -244,7 +300,7 @@ class OrderServiceTest {
         assertThat(responses.get(0).getOrderId()).isEqualTo(2L);
         assertThat(responses.get(0).getProductId()).isEqualTo(1L);
         assertThat(responses.get(0).getQuantity()).isEqualTo(5);
-        assertThat(responses.get(0).getAllocatedTo()).isEqualTo(vendorId);
+        assertThat(responses.get(0).getAllocatedVendorId()).isEqualTo(vendorId);
         assertThat(responses.get(0).getStatus()).isEqualTo("ALLOCATED");
         assertThat(responses.get(1).getOrderId()).isEqualTo(1L);
     }
@@ -269,6 +325,16 @@ class OrderServiceTest {
     void getVendorOrders_ordersAreSortedByCreatedAtDesc() {
         // Given - Orders returned in descending order (newest first)
         Long vendorId = 2L;
+
+        // Setup vendor and vendor product for toOrderResponse
+        com.moyo.oms.model.Vendor vendor = new com.moyo.oms.model.Vendor();
+        vendor.setId(vendorId);
+        vendor.setName("Vendor Beta");
+
+        com.moyo.oms.model.VendorProduct vendorProduct = new com.moyo.oms.model.VendorProduct();
+        vendorProduct.setVendor(vendor);
+        vendorProduct.setProduct(testProduct);
+        vendorProduct.setPrice(new java.math.BigDecimal("45.00"));
 
         LocalDateTime older = LocalDateTime.of(2026, 1, 20, 10, 0, 0);
         LocalDateTime middle = LocalDateTime.of(2026, 1, 20, 12, 0, 0);
@@ -301,6 +367,9 @@ class OrderServiceTest {
         // Repository returns in DESC order (newest first)
         when(orderRepository.findByAllocatedVendorIdOrderByCreatedAtDesc(vendorId))
             .thenReturn(Arrays.asList(newOrder, middleOrder, oldOrder));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(vendorProductRepository.findByVendorIdAndProductIdWithProduct(vendorId, 1L))
+            .thenReturn(Optional.of(vendorProduct));
 
         // When
         List<OrderResponse> responses = orderService.getVendorOrders(vendorId);
@@ -325,6 +394,16 @@ class OrderServiceTest {
         Long orderId = 1L;
         Long vendorId = 2L;
 
+        // Setup vendor and vendor product for toOrderResponse
+        com.moyo.oms.model.Vendor vendor = new com.moyo.oms.model.Vendor();
+        vendor.setId(vendorId);
+        vendor.setName("Vendor Beta");
+
+        com.moyo.oms.model.VendorProduct vendorProduct = new com.moyo.oms.model.VendorProduct();
+        vendorProduct.setVendor(vendor);
+        vendorProduct.setProduct(testProduct);
+        vendorProduct.setPrice(new java.math.BigDecimal("45.00"));
+
         Order order = new Order();
         order.setId(orderId);
         order.setProductId(1L);
@@ -334,6 +413,9 @@ class OrderServiceTest {
         order.setCreatedAt(LocalDateTime.of(2026, 1, 20, 12, 0, 0));
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(productRepository.findById(1L)).thenReturn(Optional.of(testProduct));
+        when(vendorProductRepository.findByVendorIdAndProductIdWithProduct(vendorId, 1L))
+            .thenReturn(Optional.of(vendorProduct));
 
         // When
         OrderResponse response = orderService.getOrderById(orderId, vendorId);
@@ -343,7 +425,7 @@ class OrderServiceTest {
         assertThat(response.getOrderId()).isEqualTo(orderId);
         assertThat(response.getProductId()).isEqualTo(1L);
         assertThat(response.getQuantity()).isEqualTo(10);
-        assertThat(response.getAllocatedTo()).isEqualTo(vendorId);
+        assertThat(response.getAllocatedVendorId()).isEqualTo(vendorId);
         assertThat(response.getStatus()).isEqualTo("ALLOCATED");
         assertThat(response.getCreatedAt()).contains("2026-01-20T12:00");
         verify(orderRepository).findById(orderId);

@@ -12,12 +12,12 @@ import java.util.Optional;
 public interface VendorProductRepository extends JpaRepository<VendorProduct, Long> {
     List<VendorProduct> findByVendorId(Long vendorId);
 
-    @Query("SELECT vp FROM VendorProduct vp JOIN FETCH vp.product WHERE vp.vendor.id = :vendorId")
+    @Query("SELECT vp FROM VendorProduct vp JOIN FETCH vp.vendor JOIN FETCH vp.product WHERE vp.vendor.id = :vendorId")
     List<VendorProduct> findByVendorIdWithProduct(@Param("vendorId") Long vendorId);
 
     Optional<VendorProduct> findByVendorIdAndProductId(Long vendorId, Long productId);
 
-    @Query("SELECT vp FROM VendorProduct vp JOIN FETCH vp.product WHERE vp.vendor.id = :vendorId AND vp.product.id = :productId")
+    @Query("SELECT vp FROM VendorProduct vp JOIN FETCH vp.vendor JOIN FETCH vp.product WHERE vp.vendor.id = :vendorId AND vp.product.id = :productId")
     Optional<VendorProduct> findByVendorIdAndProductIdWithProduct(@Param("vendorId") Long vendorId, @Param("productId") Long productId);
 
     List<VendorProduct> findByProductIdAndStockGreaterThanOrderByPriceAsc(Long productId, Integer minStock);

@@ -93,7 +93,8 @@ class VendorControllerTest {
 
         PriceUpdateRequest request = new PriceUpdateRequest(new BigDecimal("55.00"));
         PriceUpdateResponse expectedResponse = new PriceUpdateResponse(
-            1L, "widget-001", "Widget", new BigDecimal("55.00"), "2026-01-19T14:30:00.000Z"
+            1L, "widget-001", "Widget", 1L, "Vendor Alpha",
+            new BigDecimal("50.00"), new BigDecimal("55.00"), 100, "2026-01-19T14:30:00.000Z"
         );
         when(vendorService.updatePrice(1L, 1L, request)).thenReturn(expectedResponse);
 
@@ -136,7 +137,8 @@ class VendorControllerTest {
 
         StockUpdateRequest request = new StockUpdateRequest(150);
         StockUpdateResponse expectedResponse = new StockUpdateResponse(
-            1L, "widget-001", "Widget", 150, "2026-01-19T14:30:00.000Z"
+            1L, "widget-001", "Widget", 1L, "Vendor Alpha",
+            100, 150, new BigDecimal("50.00"), "2026-01-19T14:30:00.000Z"
         );
         when(vendorService.updateStock(1L, 1L, request)).thenReturn(expectedResponse);
 
