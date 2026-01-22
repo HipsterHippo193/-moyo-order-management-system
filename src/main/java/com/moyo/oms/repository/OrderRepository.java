@@ -1,0 +1,20 @@
+package com.moyo.oms.repository;
+
+import com.moyo.oms.model.Order;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface OrderRepository extends JpaRepository<Order, Long> {
+
+    /**
+     * Find all orders allocated to a specific vendor, ordered by creation date descending.
+     * Used in Epic 4B for vendor order visibility.
+     *
+     * @param vendorId the vendor's ID
+     * @return list of orders for this vendor, newest first
+     */
+    List<Order> findByAllocatedVendorIdOrderByCreatedAtDesc(Long vendorId);
+}

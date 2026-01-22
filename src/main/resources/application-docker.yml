@@ -1,0 +1,25 @@
+# Docker-specific configuration
+# Inherits from application.yml, only override what's different
+
+spring:
+  datasource:
+    # H2 in-memory stays same for demo
+    url: jdbc:h2:mem:moyodb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always  # Ensure seed data loads in Docker environment
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false  # Reduce log noise in container
+    defer-datasource-initialization: true
+
+logging:
+  level:
+    root: INFO
+    com.moyo.oms: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"

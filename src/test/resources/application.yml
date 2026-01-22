@@ -1,0 +1,16 @@
+spring:
+  sql:
+    init:
+      mode: never  # Disable data.sql in tests to avoid unique constraint violations
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    defer-datasource-initialization: false
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: test-256-bit-secret-key-for-jwt-token-generation-min-32-chars
+  expiration: 3600000
