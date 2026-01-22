@@ -1,10 +1,30 @@
-# Spring Boot Project Setup Guide
+# Spring Boot Project Guide - Moyo OMS
 
-A beginner-friendly explanation of the Moyo Order Management System codebase.
+**The Complete Guide to Understanding Your Order Management System**
+
+*A fun, practical guide from "what's a Spring Boot?" to "I built a production-ready API!"*
+
+---
+
+## 📚 Table of Contents
+
+1. [What is This Project?](#what-is-this-project)
+2. [Core Technologies Explained](#core-technologies-explained)
+3. [Project Files Deep Dive](#project-files-deep-dive)
+4. [Database Layer - Where Data Lives](#database-layer)
+5. [Security & JWT Authentication - The Bouncer](#security--jwt-authentication)
+6. [Service Layer - The Brain](#service-layer)
+7. [API Layer - The Front Desk](#api-layer)
+8. [The Intelligent Order Allocation - The Magic](#the-intelligent-order-allocation)
+9. [Complete Request Flow](#complete-request-flow)
+10. [Testing Strategy](#testing-strategy)
+11. [Quick Reference](#quick-reference)
 
 ---
 
 ## What is This Project?
+
+**TL;DR:** A system that automatically finds the cheapest vendor with stock when you place an order.
 
 Think of this project like building a house:
 
@@ -14,6 +34,20 @@ Think of this project like building a house:
 | Foundation | `MoyoOmsApplication.java` | The starting point |
 | Settings | `application.yml` | How things should behave |
 | Rooms | The packages | Organized spaces for different code |
+
+### The Problem We're Solving
+
+Imagine you run an online store that sells widgets. You don't make widgets yourself - you buy them from multiple vendors:
+
+- **Vendor Alpha**: Sells widgets for $50, has 100 in stock
+- **Vendor Beta**: Sells widgets for $45, has 50 in stock
+- **Vendor Charlie**: Sells widgets for $40, but has 0 in stock
+
+When a customer orders 10 widgets, who should we buy from?
+
+**The Smart Answer:** Vendor Beta (cheapest WITH stock)
+
+**This system does that automatically** - it's called **intelligent vendor allocation**.
 
 ---
 
@@ -123,9 +157,9 @@ When you visit `http://localhost:8080/swagger-ui.html`:
 │  Version: 1.0.0                                     │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
-│  ▼ health-controller                                │
+│  ▼ auth-controller                                  │
 │    ┌─────────────────────────────────────────────┐  │
-│    │ GET  /api/health    Returns health status   │  │
+│    │ POST /api/auth/login    Login with JWT      │  │
 │    │                                             │  │
 │    │ [Try it out]                                │  │
 │    └─────────────────────────────────────────────┘  │
@@ -171,34 +205,13 @@ We use **springdoc-openapi** which:
 
 ---
 
-## 1. pom.xml - The Shopping List
+## Project Files Deep Dive
 
-This is a **Maven** file. Maven is a tool that:
-- Downloads libraries (dependencies) your project needs
-- Compiles your code
-- Runs tests
-- Packages your app into a JAR file
+### 1. pom.xml - The Shopping List
 
-### Project Identity
+This is a **Maven** file that manages dependencies.
 
-```xml
-<parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.9</version>
-</parent>
-```
-
-**Translation:** "My project inherits from Spring Boot 3.5.9" - this gives you sensible defaults so you don't configure everything manually.
-
-```xml
-<groupId>com.moyo</groupId>
-<artifactId>oms</artifactId>
-```
-
-**Translation:** Your project's unique ID. `com.moyo` is the organization, `oms` is the project name (Order Management System).
-
-### Dependencies Explained
+#### Dependencies Explained
 
 | Dependency | What It Does |
 |------------|--------------|
@@ -207,21 +220,11 @@ This is a **Maven** file. Maven is a tool that:
 | `spring-boot-starter-security` | Add login/authentication features |
 | `spring-boot-starter-validation` | Validate input (e.g., "email must be valid") |
 | `h2` | In-memory database for testing |
-| `lombok` | Auto-generates getters/setters |
+| `lombok` | Auto-generates getters/setters (saves typing!) |
 | `springdoc-openapi` | Creates Swagger UI to test your API |
 | `jjwt-*` | Create/verify JWT login tokens |
 
-### Dependency Scopes
-
-```xml
-<scope>runtime</scope>  <!-- Only needed when app runs -->
-<scope>test</scope>     <!-- Only needed for tests -->
-<!-- No scope = always needed -->
-```
-
----
-
-## 2. MoyoOmsApplication.java - The On Switch
+### 2. MoyoOmsApplication.java - The On Switch
 
 ```java
 @SpringBootApplication
@@ -234,7 +237,7 @@ public class MoyoOmsApplication {
 
 This is the **entry point**. When you run the app, Java calls `main()`.
 
-### What @SpringBootApplication Does
+**What @SpringBootApplication Does**
 
 This single annotation does 3 things:
 
@@ -246,780 +249,137 @@ This single annotation does 3 things:
 
 **Simple version:** This annotation tells Spring Boot to "figure out what I need and set it up for me."
 
----
-
-## 3. application.yml - The Settings File
-
-YAML is a configuration format (like JSON but more readable). Indentation matters!
-
-### Server Settings
+### 3. application.yml - The Settings File
 
 ```yaml
 server:
   port: 8080
-```
 
-**Translation:** "Run on port 8080" - access at `http://localhost:8080`
-
-### Database Settings
-
-```yaml
 spring:
   datasource:
-    url: jdbc:h2:mem:moyodb
+    url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
-```
-
-| Setting | Meaning |
-|---------|---------|
-| `jdbc:h2:mem:moyodb` | H2 database, in-memory, named "moyodb" |
-| `username: sa` | Default H2 username |
-| `password:` | Empty (fine for development) |
-
-### H2 Console
-
-```yaml
   h2:
     console:
       enabled: true
-      path: /h2-console
-```
-
-**Translation:** "Enable the database web viewer at `/h2-console`"
-
-### JPA/Hibernate Settings
-
-```yaml
   jpa:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+
+jwt:
+  secret: moyo-secret-key-change-in-production-for-real
+  expiration: 86400000  # 24 hours in milliseconds
 ```
 
 | Setting | Meaning |
 |---------|---------|
+| `port: 8080` | Run on port 8080 |
+| `jdbc:h2:mem:testdb` | H2 database, in-memory, named "testdb" |
 | `ddl-auto: create-drop` | Create tables on start, drop on stop |
 | `show-sql: true` | Print SQL queries to console |
-
-> **Warning:** `create-drop` is for development only. Production uses `validate` or `none`.
-
-### Swagger Settings
-
-```yaml
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-```
-
-**Translation:** "Put API documentation at `/swagger-ui.html`"
+| `jwt.expiration: 86400000` | JWT tokens expire after 24 hours |
 
 ---
 
-## 4. SecurityConfig.java - The Bouncer
+## Database Layer
 
-```java
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig {
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            // CSRF disabled: This is a stateless REST API using JWT authentication.
-            // No session cookies are used, so CSRF protection is not applicable.
-            .csrf(csrf -> csrf.disable())
-            // Stateless session: No server-side session storage (JWT-based auth)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            // Temporary: permit all requests until JWT auth is implemented in Story 2.x
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            );
-        return http.build();
-    }
-}
-```
-
-### Line by Line
-
-| Code | Meaning |
-|------|---------|
-| `@Configuration` | "This class contains configuration" |
-| `@EnableWebSecurity` | "Turn on Spring Security" |
-| `@Bean` | "Spring, manage this object for me" |
-| `.csrf(csrf -> csrf.disable())` | Disable CSRF (not needed for stateless REST APIs with JWT) |
-| `.sessionManagement(...)` | Configure how sessions are handled |
-| `SessionCreationPolicy.STATELESS` | "Never create HTTP sessions - we use JWT tokens instead" |
-| `.anyRequest().permitAll()` | "Allow ALL requests without login" |
-
-### Why Stateless?
-
-REST APIs with JWT authentication don't need server-side sessions:
-
-| Approach | How It Works | Storage |
-|----------|--------------|---------|
-| **Session-based** | Server stores session, sends cookie | Server memory/database |
-| **JWT (Stateless)** | Token contains all info, sent in header | Client only |
-
-By setting `STATELESS`, Spring won't create `JSESSIONID` cookies. This is the correct setup for JWT authentication.
-
-### Current State
-
-**The bouncer is letting everyone in.** This is temporary for development. The `permitAll()` will be replaced with proper JWT authorization rules in Story 2.x.
-
----
-
-## 5. SwaggerConfig.java - API Documentation
-
-```java
-@Configuration
-public class SwaggerConfig {
-
-    @Bean
-    public OpenAPI openAPI() {
-        return new OpenAPI()
-            .info(new Info()
-                .title("Moyo Order Management System API")
-                .description("Vendor pricing, inventory, and order allocation system")
-                .version("1.0.0"));
-    }
-}
-```
-
-This sets the title, description, and version shown on the Swagger UI page.
-
----
-
-## 6. HealthController.java - Your First Endpoint
-
-```java
-@RestController
-@RequestMapping("/api")
-public class HealthController {
-
-    @GetMapping("/health")
-    public ResponseEntity<Map<String, String>> health() {
-        Map<String, String> response = Map.of("status", "UP");
-        return ResponseEntity.ok(response);
-    }
-}
-```
-
-### Annotations Explained
-
-| Annotation | Meaning |
-|------------|---------|
-| `@RestController` | "Handle HTTP requests, return JSON" |
-| `@RequestMapping("/api")` | "All endpoints start with `/api`" |
-| `@GetMapping("/health")` | "Handle GET requests to `/health`" |
-
-**Combined URL:** `GET /api/health`
-
-### What the Method Does
-
-1. Creates a Map: `{"status": "UP"}`
-2. Wraps it with HTTP 200 OK status
-3. Spring converts it to JSON automatically
-
-**Response:** `{"status":"UP"}`
-
----
-
-## 7. Project Structure - The Room Layout
-
-```
-src/main/java/com/moyo/oms/
-├── MoyoOmsApplication.java   # Entry point
-├── config/                   # Configuration classes
-├── controller/               # HTTP handlers (front door)
-├── service/                  # Business logic (brain)
-├── repository/               # Database access
-├── model/                    # Entity classes (DB tables)
-├── dto/                      # Request/response shapes
-├── security/                 # Auth code
-└── exception/                # Error handling
-```
-
-### The Layered Architecture
-
-Data flows through layers:
-
-```
-        HTTP Request
-             │
-             ▼
-    ┌─────────────────┐
-    │   Controller    │  Receives request, validates input
-    └────────┬────────┘
-             │
-             ▼
-    ┌─────────────────┐
-    │    Service      │  Business logic
-    └────────┬────────┘
-             │
-             ▼
-    ┌─────────────────┐
-    │   Repository    │  Talks to database
-    └────────┬────────┘
-             │
-             ▼
-        Database
-```
-
-**Rule:** Each layer only talks to the layer directly below it.
-
----
-
-## 8. JJWT - JSON Web Tokens
-
-The JWT libraries are installed but **not used yet**. They're for authentication in later stories.
-
-### How JWT Works
-
-1. You log in with username/password
-2. Server gives you a JWT token (encoded string)
-3. You include this token in every future request
-4. Server verifies the token
-
-### Example Token
-
-```
-eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ2ZW5kb3ItMTIzIn0.abc123...
-```
-
-### The Three JJWT Modules
-
-| Module | Purpose |
-|--------|---------|
-| `jjwt-api` | Interfaces you code against |
-| `jjwt-impl` | Actual implementation (runtime) |
-| `jjwt-jackson` | Converts JWT to/from JSON |
-
----
-
-## 9. How to Run and Test
-
-### Start the Application
-
-```bash
-mvn spring-boot:run
-```
-
-### Test the Health Endpoint
-
-**Browser or curl:**
-```
-http://localhost:8080/api/health
-```
-
-**Expected response:**
-```json
-{"status":"UP"}
-```
-
-### View Swagger UI
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
-You'll see your API documented with a "Try it out" button.
-
-### View H2 Database Console
-
-```
-http://localhost:8080/h2-console
-```
-
-| Field | Value |
-|-------|-------|
-| JDBC URL | `jdbc:h2:mem:moyodb` |
-| Username | `sa` |
-| Password | (leave empty) |
-
----
-
-## 10. Docker - Running Your App Anywhere
-
-Docker lets you package your application with everything it needs (Java, settings, libraries) into a single "container" that runs the same way on any machine.
-
-### Why Docker?
-
-**The Problem:**
-```
-Developer: "It works on my machine!"
-Server:    "Well, it doesn't work on mine."
-```
-
-Different machines have different:
-- Java versions (8? 11? 17? 21?)
-- Operating systems
-- Environment variables
-- Installed software
-
-**The Solution:** Docker packages your app + its entire environment together.
-
----
-
-### Key Concepts
-
-Think of Docker like shipping:
-
-| Concept | Analogy | What It Really Is |
-|---------|---------|-------------------|
-| **Image** | A recipe/blueprint | A read-only template with your app + OS + dependencies |
-| **Container** | A dish made from the recipe | A running instance of an image |
-| **Dockerfile** | The recipe instructions | Text file that tells Docker how to build the image |
-| **Docker Compose** | A meal plan with multiple dishes | Tool to run multiple containers together |
-
----
-
-### Container vs Virtual Machine
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    VIRTUAL MACHINE                               │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                       │
-│  │  App 1   │  │  App 2   │  │  App 3   │                       │
-│  ├──────────┤  ├──────────┤  ├──────────┤                       │
-│  │  Libs    │  │  Libs    │  │  Libs    │                       │
-│  ├──────────┤  ├──────────┤  ├──────────┤                       │
-│  │ Guest OS │  │ Guest OS │  │ Guest OS │  ← Full OS each!      │
-│  └──────────┘  └──────────┘  └──────────┘                       │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                    Hypervisor                            │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                     Host OS                              │    │
-│  └─────────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│                      CONTAINERS                                  │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                       │
-│  │  App 1   │  │  App 2   │  │  App 3   │                       │
-│  ├──────────┤  ├──────────┤  ├──────────┤                       │
-│  │  Libs    │  │  Libs    │  │  Libs    │                       │
-│  └──────────┘  └──────────┘  └──────────┘                       │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                   Docker Engine                          │    │
-│  └─────────────────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │                     Host OS                              │    │
-│  └─────────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-| Aspect | Virtual Machine | Container |
-|--------|-----------------|-----------|
-| Size | 10-50 GB | 100-500 MB |
-| Startup | Minutes | Seconds |
-| Isolation | Complete (separate OS) | Process-level |
-| Resource usage | Heavy | Lightweight |
-
-**Containers share the host OS kernel** - that's why they're so fast and small.
-
----
-
-### Dockerfile Explained
-
-Our project's `Dockerfile`:
-
-```dockerfile
-# Build stage
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
-
-# Runtime stage
-FROM eclipse-temurin:17-jre
-WORKDIR /app
-
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=build /app/target/oms-*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-#### Line by Line
-
-| Line | What It Does |
-|------|--------------|
-| `FROM maven:3.9-eclipse-temurin-17 AS build` | Start from a Maven+Java 17 image, name this stage "build" |
-| `WORKDIR /app` | Create and switch to `/app` directory |
-| `COPY pom.xml .` | Copy pom.xml into the container |
-| `COPY src ./src` | Copy source code into the container |
-| `RUN mvn clean package -DskipTests` | Build the JAR file |
-| `FROM eclipse-temurin:17-jre` | Start fresh with a smaller Java runtime image |
-| `RUN apt-get update && apt-get install...` | Install curl (needed for Docker healthcheck) |
-| `&& rm -rf /var/lib/apt/lists/*` | Clean up apt cache to keep image small |
-| `COPY --from=build /app/target/oms-*.jar app.jar` | Copy JAR from build stage |
-| `EXPOSE 8080` | Document that port 8080 is used |
-| `ENTRYPOINT ["java", "-jar", "app.jar"]` | Command to run when container starts |
-
-#### Why Install curl?
-
-The `eclipse-temurin:17-jre` image is minimal - it only contains the Java runtime. But our `docker-compose.yml` uses curl for healthchecks:
-
-```yaml
-healthcheck:
-  test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
-```
-
-Without curl installed, the healthcheck would fail and Docker would report the container as "unhealthy" even when the app is running fine.
-
-#### Why Two Stages?
-
-This is called a **multi-stage build**:
-
-```
-Stage 1 (build):     Stage 2 (runtime):
-┌─────────────┐      ┌─────────────┐
-│ Maven       │      │ Java JRE    │
-│ JDK         │      │ Your JAR    │
-│ Source code │  →   │             │
-│ Dependencies│      │             │
-│ ~500MB      │      │ ~200MB      │
-└─────────────┘      └─────────────┘
-```
-
-The final image only contains what's needed to **run** the app, not build it.
-
----
-
-### Docker Compose Explained
-
-Our project's `docker-compose.yml`:
-
-```yaml
-services:
-  moyo-oms:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-```
-
-#### Line by Line
-
-| Section | What It Does |
-|---------|--------------|
-| `services:` | List of containers to run |
-| `moyo-oms:` | Name of our service |
-| `build: context: .` | Build image from current directory |
-| `dockerfile: Dockerfile` | Use the file named "Dockerfile" |
-| `ports: "8080:8080"` | Map host port 8080 to container port 8080 |
-| `environment:` | Set environment variables |
-| `SPRING_PROFILES_ACTIVE=docker` | Activates `application-docker.yml` settings |
-| `healthcheck:` | How Docker knows if the app is healthy |
-
-#### Port Mapping Explained
-
-```
-"8080:8080"
-   │    │
-   │    └── Container port (inside Docker)
-   └─────── Host port (your machine)
-```
-
-If you used `"3000:8080"`:
-- Access via `http://localhost:3000` on your machine
-- App still listens on 8080 inside the container
-
----
-
-### Spring Profiles with Docker
-
-We have two configuration files:
-
-| File | Used When | Purpose |
-|------|-----------|---------|
-| `application.yml` | Local development | Show SQL, debug settings |
-| `application-docker.yml` | Running in Docker | Quieter logs, container-friendly |
-
-The `SPRING_PROFILES_ACTIVE=docker` environment variable tells Spring to load `application-docker.yml`.
-
-#### application-docker.yml Key Settings
-
-```yaml
-spring:
-  sql:
-    init:
-      mode: always  # Ensure seed data loads in Docker environment
-  jpa:
-    show-sql: false  # Reduce log noise in container
-    defer-datasource-initialization: true  # Wait for schema before data.sql
-```
-
-| Setting | Why It Matters |
-|---------|----------------|
-| `sql.init.mode: always` | Explicitly ensures `data.sql` runs (doesn't rely on inheritance) |
-| `show-sql: false` | Cleaner container logs (SQL logging is for debugging) |
-| `defer-datasource-initialization: true` | Prevents "table not found" errors in data.sql |
-
----
-
-### Running with Docker
-
-#### First Time (Build + Run)
-
-```bash
-docker-compose up --build
-```
-
-This:
-1. Builds the Docker image (compiles your code)
-2. Creates a container from the image
-3. Starts the container
-4. Shows logs in your terminal
-
-#### Run in Background
-
-```bash
-docker-compose up -d
-```
-
-The `-d` means "detached" (runs in background).
-
-#### View Logs
-
-```bash
-docker-compose logs -f moyo-oms
-```
-
-The `-f` means "follow" (live updates).
-
-#### Stop Everything
-
-```bash
-docker-compose down
-```
-
-This stops and removes the containers.
-
----
-
-### Common Docker Commands
-
-| Command | What It Does |
-|---------|--------------|
-| `docker-compose up` | Start containers |
-| `docker-compose up -d` | Start in background |
-| `docker-compose up --build` | Rebuild then start |
-| `docker-compose down` | Stop and remove containers |
-| `docker-compose logs moyo-oms` | View logs |
-| `docker-compose logs -f moyo-oms` | View logs (live) |
-| `docker-compose ps` | List running containers |
-| `docker-compose build --no-cache` | Rebuild without cache |
-
-### Useful Docker Commands (Without Compose)
-
-| Command | What It Does |
-|---------|--------------|
-| `docker images` | List all images |
-| `docker ps` | List running containers |
-| `docker ps -a` | List all containers (including stopped) |
-| `docker stop <id>` | Stop a container |
-| `docker rm <id>` | Remove a container |
-| `docker rmi <image>` | Remove an image |
-
----
-
-### When to Use What
-
-| Scenario | Command |
-|----------|---------|
-| Development (need to debug) | `mvn spring-boot:run` |
-| Test Docker setup | `docker-compose up --build` |
-| Demo to someone | `docker-compose up -d` |
-| CI/CD pipeline | `docker-compose up --build` |
-
----
-
-### Troubleshooting Docker
-
-| Problem | Solution |
-|---------|----------|
-| "Port already in use" | Stop local Spring Boot: `mvn spring-boot:stop` or check `docker ps` |
-| "Cannot connect to Docker daemon" | Start Docker Desktop |
-| Build fails | Check `docker-compose logs` for errors |
-| Old code running | Rebuild: `docker-compose up --build` |
-| Container unhealthy | Check app logs: `docker-compose logs moyo-oms` |
-
----
-
-## 11. Database Entities & Seed Data
-
-This section covers the data layer - how we store vendors, products, and their relationships.
-
-### What is an Entity?
-
-An **entity** is a Java class that maps to a database table. Each instance of the class = one row in the table.
-
-```
-Java World                    Database World
-─────────────────────────────────────────────
-Vendor.java        ←→         vendors table
-  - id             ←→           id column
-  - username       ←→           username column
-  - password       ←→           password column
-```
-
-Spring Data JPA handles the translation automatically.
-
----
-
-### Our Three Entities
-
-We have three entities that form the core data model:
+### The Three-Table Design
 
 ```
 ┌─────────────┐       ┌──────────────────┐       ┌─────────────┐
-│   vendors   │       │  vendor_products │       │  products   │
+│   Vendor    │       │  VendorProduct   │       │   Product   │
 ├─────────────┤       ├──────────────────┤       ├─────────────┤
-│ id (PK)     │───┐   │ id (PK)          │   ┌───│ id (PK)     │
-│ username    │   └──>│ vendor_id (FK)   │   │   │ product_code│
-│ password    │       │ product_id (FK)  │<──┘   │ name        │
-│ name        │       │ price            │       │ description │
-│ created_at  │       │ stock            │       │ created_at  │
-└─────────────┘       │ updated_at       │       └─────────────┘
-                      └──────────────────┘
+│ id          │◄─────┤│ vendor_id (FK)   │       │ id          │
+│ username    │       │ product_id (FK)  │├─────►│ product_code│
+│ password    │       │ price            │       │ name        │
+│ name        │       │ stock            │       │ description │
+│ email       │       │ updated_at       │       └─────────────┘
+└─────────────┘       └──────────────────┘
+       ▲                       │
+       │                       │
+       │         ┌──────────────────┐
+       │         │     Order        │
+       │         ├──────────────────┤
+       └────────┤│ vendor_id (FK)   │
+                 │ product_id (FK)  │
+                 │ quantity         │
+                 │ total_price      │
+                 │ status           │
+                 └──────────────────┘
 ```
 
-| Entity | Purpose | Key Fields |
-|--------|---------|------------|
-| `Vendor` | A supplier who sells products | username, password, name |
-| `Product` | Something that can be sold | productCode, name, description |
-| `VendorProduct` | Links a vendor to a product with price/stock | vendor, product, price, stock |
+### Why VendorProduct?
 
-**Why VendorProduct?** Different vendors can sell the same product at different prices with different stock levels. This is called a **many-to-many relationship with extra attributes**.
+**The Problem:** Different vendors sell the same product at different prices with different stock.
 
----
+**Bad Design:**
+```java
+class Vendor {
+    String productPrice;  // What if they sell 100 products?
+    int productStock;     // This doesn't scale!
+}
+```
 
-### Entity Anatomy: Vendor.java
+**Good Design:** A separate table for each vendor-product relationship:
+
+```java
+class VendorProduct {
+    Vendor vendor;    // Who's selling
+    Product product;  // What they're selling
+    BigDecimal price; // Their price
+    Integer stock;    // Their stock level
+}
+```
+
+Now Vendor Alpha can sell Widget for $50, while Vendor Beta sells it for $45.
+
+### Entity Example: Vendor.java
 
 ```java
 @Entity
 @Table(name = "vendors")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Data  // Lombok: auto-generates getters, setters, toString, equals, hashCode
 public class Vendor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "username", unique = true, nullable = false, length = 50)
+    @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(name = "password", nullable = false)
-    private String password;
+    @Column(nullable = false)
+    private String password;  // BCrypt hashed
 
-    @Column(name = "name", nullable = false, length = 100)
     private String name;
+    private String email;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @PrePersist
+    @PrePersist  // Runs before saving
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
 }
 ```
 
-#### Annotations Explained
+**Key Annotations:**
 
 | Annotation | What It Does |
 |------------|--------------|
-| `@Entity` | "This class maps to a database table" |
-| `@Table(name = "vendors")` | "The table is called 'vendors'" |
-| `@Data` | Lombok: generates getters, setters, toString, equals, hashCode |
-| `@NoArgsConstructor` | Lombok: generates empty constructor (required by JPA) |
-| `@AllArgsConstructor` | Lombok: generates constructor with all fields |
+| `@Entity` | "This class = database table" |
+| `@Table(name = "vendors")` | "Table name is 'vendors'" |
+| `@Data` | Lombok magic (generates 100+ lines of code) |
 | `@Id` | "This is the primary key" |
-| `@GeneratedValue(IDENTITY)` | "Database auto-generates the ID" |
-| `@Column(...)` | Configure column: name, constraints, length |
-| `@PrePersist` | "Run this method before saving to database" |
+| `@GeneratedValue` | "Database creates IDs automatically" |
+| `@Column(unique = true)` | "No duplicate usernames allowed" |
+| `@PrePersist` | "Run this before saving to database" |
 
-#### Naming Conventions
-
-| Java | Database | Rule |
-|------|----------|------|
-| `Vendor` | `vendors` | Table: snake_case, plural |
-| `productCode` | `product_code` | Column: snake_case |
-| `VendorProduct` | `vendor_products` | Table: snake_case, plural |
-
----
-
-### Relationships: VendorProduct.java
-
-```java
-@Entity
-@Table(name = "vendor_products", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"vendor_id", "product_id"})
-})
-public class VendorProduct {
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_id", nullable = false)
-    private Vendor vendor;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
-
-    @Column(name = "price", precision = 10, scale = 2)
-    private BigDecimal price;
-
-    @Column(name = "stock")
-    private Integer stock;
-}
-```
-
-#### Key Concepts
-
-| Annotation | Meaning |
-|------------|---------|
-| `@ManyToOne` | "Many VendorProducts can belong to one Vendor" |
-| `@JoinColumn` | "This is the foreign key column" |
-| `FetchType.LAZY` | "Don't load related data until needed" (performance) |
-| `@UniqueConstraint` | "Each vendor-product pair must be unique" |
-
-#### Relationship Types
-
-```
-Vendor (1) ────────< (Many) VendorProduct (Many) >──────── (1) Product
-
-One vendor can have many VendorProducts (different products)
-One product can have many VendorProducts (sold by different vendors)
-```
-
----
-
-### What is a Repository?
-
-A **repository** is an interface that provides database operations. You define the method signature, Spring Data JPA implements it automatically.
+### Repository Magic
 
 ```java
 @Repository
@@ -1028,32 +388,20 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
 }
 ```
 
-#### Magic Method Names
-
-Spring Data JPA creates queries from method names:
+**You write:** Method name
+**Spring Data JPA provides:** Implementation automatically
 
 | Method Name | Generated SQL |
 |-------------|---------------|
 | `findByUsername(String)` | `SELECT * FROM vendors WHERE username = ?` |
-| `findByProductCode(String)` | `SELECT * FROM products WHERE product_code = ?` |
-| `findByVendorId(Long)` | `SELECT * FROM vendor_products WHERE vendor_id = ?` |
-| `findByProductIdAndStockGreaterThanOrderByPriceAsc(...)` | Complex query with conditions and sorting |
+| `findByEmail(String)` | `SELECT * FROM vendors WHERE email = ?` |
+| `findByCreatedAtAfter(LocalDateTime)` | `SELECT * FROM vendors WHERE created_at > ?` |
 
-**No SQL needed!** Just name your method correctly.
+**No SQL needed!** Just follow the naming pattern.
 
----
+### The Smart Query
 
-### Our Three Repositories
-
-| Repository | Entity | Custom Methods |
-|------------|--------|----------------|
-| `VendorRepository` | Vendor | `findByUsername()` |
-| `ProductRepository` | Product | `findByProductCode()` |
-| `VendorProductRepository` | VendorProduct | `findByVendorId()`, `findByVendorIdAndProductId()`, `findByProductIdAndStockGreaterThanOrderByPriceAsc()` |
-
-#### The Allocation Query
-
-This method finds vendors who can fulfill an order (have stock) sorted by cheapest price:
+The most important query in the system:
 
 ```java
 List<VendorProduct> findByProductIdAndStockGreaterThanOrderByPriceAsc(
@@ -1062,136 +410,947 @@ List<VendorProduct> findByProductIdAndStockGreaterThanOrderByPriceAsc(
 );
 ```
 
-Translates to:
+**Translates to:**
 ```sql
 SELECT * FROM vendor_products
 WHERE product_id = ?
   AND stock > ?
-ORDER BY price ASC
+ORDER BY price ASC  -- Cheapest first!
+```
+
+This finds all vendors who:
+1. Sell the requested product
+2. Have enough stock
+3. **Sorted by price (cheapest first)**
+
+This ONE query powers the entire allocation algorithm!
+
+---
+
+## Security & JWT Authentication
+
+### The Problem: How Do APIs Know It's You?
+
+**Scenario:** You're at a coffee shop.
+
+**Session-based (old way):**
+```
+You: "Hi, I'm Alice"
+Barista: *gives you ticket #42*
+        *writes on notepad: "#42 = Alice"*
+You: *shows ticket #42*
+Barista: *checks notepad* "Oh yes, Alice, here's your coffee"
+```
+
+**JWT-based (our way):**
+```
+You: "Hi, I'm Alice"
+Barista: *gives you laminated badge with your name, photo, expiry date*
+You: *shows badge*
+Barista: *looks at badge* "Yep, it's you. Here's your coffee"
+        *no notepad needed!*
+```
+
+### JWT = JSON Web Token
+
+A JWT is a **self-contained token** that includes everything needed to identify you.
+
+**Structure:**
+```
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ2ZW5kb3ItYSIsImV4cCI6MTY3ODg5NjAwMH0.abc123xyz
+├───────────────────┘ ├──────────────────────────────────────────┘ ├────────┘
+     Header                        Payload                         Signature
+```
+
+| Part | Contains | Example |
+|------|----------|---------|
+| **Header** | Algorithm used | `{"alg": "HS256"}` |
+| **Payload** | User data | `{"username": "vendor-a", "exp": 1678896000}` |
+| **Signature** | Crypto signature | Proves token wasn't tampered with |
+
+### The Authentication Flow
+
+```
+┌─────────┐                          ┌─────────┐
+│ Client  │                          │ Server  │
+└────┬────┘                          └────┬────┘
+     │                                    │
+     │ 1. POST /api/auth/login            │
+     │    {username, password}            │
+     ├───────────────────────────────────►│
+     │                                    │
+     │                                    │ 2. Check password
+     │                                    │    with BCrypt
+     │                                    │
+     │                                    │ 3. Generate JWT
+     │ 4. {token: "eyJhbGc..."}           │    (expires in 24h)
+     │◄───────────────────────────────────┤
+     │                                    │
+     │ 5. GET /api/vendors                │
+     │    Authorization: Bearer eyJhbGc...│
+     ├───────────────────────────────────►│
+     │                                    │
+     │                                    │ 6. Verify JWT
+     │                                    │    (signature valid?)
+     │                                    │    (not expired?)
+     │                                    │
+     │ 7. {vendors: [...]}                │ 8. Execute request
+     │◄───────────────────────────────────┤
+     │                                    │
+```
+
+### SecurityConfig - The Bouncer
+
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) {
+        http
+            .csrf(csrf -> csrf.disable())  // Not needed for stateless JWT
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/**").permitAll()     // Login = no auth
+                .requestMatchers("/api/health").permitAll()       // Health = no auth
+                .requestMatchers("/swagger-ui/**").permitAll()    // Docs = no auth
+                .requestMatchers("/v3/api-docs/**").permitAll()   // API spec = no auth
+                .anyRequest().authenticated()                     // Everything else = must login
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+}
+```
+
+**Translation:**
+
+| Rule | Meaning |
+|------|---------|
+| `csrf.disable()` | CSRF protection off (not needed for JWT APIs) |
+| `STATELESS` | No server-side sessions (JWT contains all info) |
+| `/api/auth/**` = permitAll | Anyone can access login endpoint |
+| `/api/health` = permitAll | Anyone can check if server is up |
+| `/swagger-ui/**` = permitAll | Anyone can view API docs |
+| `anyRequest().authenticated()` | Everything else requires JWT token |
+| `addFilterBefore(jwtAuthFilter)` | Check JWT before processing request |
+
+### JwtAuthenticationFilter - The ID Checker
+
+```java
+@Component
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, ...) {
+
+        // 1. Extract token from "Authorization: Bearer <token>" header
+        String token = getTokenFromRequest(request);
+
+        // 2. Validate token (signature valid? not expired?)
+        if (token != null && jwtTokenProvider.validateToken(token)) {
+
+            // 3. Extract username from token
+            String username = jwtTokenProvider.getUsernameFromToken(token);
+
+            // 4. Load user details from database
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+            // 5. Tell Spring Security: "This user is authenticated"
+            Authentication auth = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities()
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+
+        // 6. Continue processing request
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
+**Flow:**
+
+```
+Request comes in
+    ↓
+Extract JWT from header
+    ↓
+Valid JWT? ─────No─────► 401 Unauthorized
+    │
+   Yes
+    ↓
+Extract username from JWT
+    ↓
+Set user as authenticated
+    ↓
+Continue to controller
+```
+
+### Password Security: BCrypt
+
+**Never store passwords in plain text!**
+
+```java
+// BAD - NEVER DO THIS
+vendor.setPassword("password123");  // Visible in database!
+
+// GOOD - Use BCrypt
+String hashed = passwordEncoder.encode("password123");
+vendor.setPassword(hashed);
+// Stores: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n7tHxh1Bq9xdWy.yMzDNi
+```
+
+**BCrypt Properties:**
+- **One-way**: Can't decrypt hash to get password back
+- **Salted**: Same password = different hash each time
+- **Slow**: Takes ~100ms to hash (prevents brute-force attacks)
+- **Adaptive**: Can increase difficulty as computers get faster
+
+**Verification:**
+```java
+passwordEncoder.matches("password123", storedHash);  // true
+passwordEncoder.matches("wrong", storedHash);         // false
 ```
 
 ---
 
-### Seed Data: data.sql
+## Service Layer - The Brain
 
-When the application starts, it loads demo data from `src/main/resources/data.sql`:
+The service layer contains **business logic**. Controllers handle HTTP, repositories handle database, services handle *everything else*.
 
-```sql
--- Seed Vendors (passwords are BCrypt hashed: "password123")
-INSERT INTO vendors (username, password, name, created_at) VALUES
-('vendor-a', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n7tHxh1Bq9xdWy.yMzDNi', 'Vendor Alpha', CURRENT_TIMESTAMP),
-('vendor-b', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n7tHxh1Bq9xdWy.yMzDNi', 'Vendor Beta', CURRENT_TIMESTAMP),
-('vendor-c', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n7tHxh1Bq9xdWy.yMzDNi', 'Vendor Charlie', CURRENT_TIMESTAMP);
+### Why a Service Layer?
 
--- Seed Products
-INSERT INTO products (product_code, name, description, created_at) VALUES
-('widget-001', 'Widget', 'Standard widget for demo purposes', CURRENT_TIMESTAMP);
+```
+❌ BAD: Controller talks directly to database
 
--- Seed VendorProducts
-INSERT INTO vendor_products (vendor_id, product_id, price, stock, updated_at) VALUES
-(1, 1, 50.00, 100, CURRENT_TIMESTAMP),
-(2, 1, 45.00, 50, CURRENT_TIMESTAMP),
-(3, 1, 40.00, 0, CURRENT_TIMESTAMP);
+┌────────────┐
+│ Controller │──► Validates input
+│            │──► Checks business rules
+│            │──► Talks to database
+│            │──► Formats response
+└────────────┘
+^ Too many responsibilities!
+
+
+✅ GOOD: Layered architecture
+
+┌────────────┐
+│ Controller │──► Receives request, validates input
+└──────┬─────┘
+       │
+┌──────▼─────┐
+│  Service   │──► Business logic, orchestration
+└──────┬─────┘
+       │
+┌──────▼─────┐
+│ Repository │──► Database access only
+└────────────┘
 ```
 
-#### Demo Credentials
+### VendorService - Vendor Operations
 
-| Vendor | Username | Password | Price | Stock | Notes |
-|--------|----------|----------|-------|-------|-------|
-| Vendor Alpha | `vendor-a` | `password123` | $50.00 | 100 | Expensive but has stock |
-| Vendor Beta | `vendor-b` | `password123` | $45.00 | 50 | **Wins allocations** (cheapest with stock) |
-| Vendor Charlie | `vendor-c` | `password123` | $40.00 | 0 | Cheapest but no stock |
+```java
+@Service
+@RequiredArgsConstructor
+public class VendorService {
 
-#### Password Security
+    private final VendorRepository vendorRepository;
+    private final VendorProductRepository vendorProductRepository;
 
-Passwords are stored as **BCrypt hashes**, not plain text:
-- Original: `password123`
-- Stored: `$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n7tHxh1Bq9xdWy.yMzDNi`
+    public List<VendorProductResponse> getVendorProducts(Long vendorId) {
+        // 1. Find vendor
+        Vendor vendor = vendorRepository.findById(vendorId)
+            .orElseThrow(() -> new ResourceNotFoundException("Vendor not found"));
 
-The `$2a$10$` prefix means BCrypt with 10 rounds of hashing.
+        // 2. Get their products
+        List<VendorProduct> vendorProducts =
+            vendorProductRepository.findByVendorId(vendorId);
+
+        // 3. Convert to DTOs
+        return vendorProducts.stream()
+            .map(this::toDTO)
+            .toList();
+    }
+
+    public void updatePrice(Long vendorId, Long productId, BigDecimal newPrice) {
+        // 1. Security check: Verify this vendor owns this product
+        VendorProduct vp = vendorProductRepository
+            .findByVendorIdAndProductId(vendorId, productId)
+            .orElseThrow(() -> new VendorAccessDeniedException(
+                "You don't sell this product"
+            ));
+
+        // 2. Validation: Price must be positive
+        if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Price must be positive");
+        }
+
+        // 3. Update and save
+        vp.setPrice(newPrice);
+        vp.setUpdatedAt(LocalDateTime.now());
+        vendorProductRepository.save(vp);
+    }
+}
+```
+
+**What the Service Does:**
+
+| Responsibility | Example |
+|----------------|---------|
+| **Validation** | Price > 0, stock >= 0 |
+| **Authorization** | Vendor can only update their own products |
+| **Orchestration** | Fetch vendor, then fetch products, then convert to DTOs |
+| **Business Rules** | Can't reduce stock below 0, can't set negative prices |
+| **Error Handling** | Throw meaningful exceptions |
+
+### AllocationService - The Smart Algorithm
+
+This is the **crown jewel** of the system - the intelligent vendor selection.
+
+```java
+@Service
+@RequiredArgsConstructor
+public class AllocationService {
+
+    private final VendorProductRepository vendorProductRepository;
+
+    public VendorProduct findBestVendor(Long productId, Integer quantity) {
+
+        // 1. Find all vendors who sell this product AND have stock
+        List<VendorProduct> availableVendors =
+            vendorProductRepository
+                .findByProductIdAndStockGreaterThanOrderByPriceAsc(
+                    productId,
+                    quantity - 1  // Need at least 'quantity' in stock
+                );
+
+        // 2. No vendors have stock? Fail
+        if (availableVendors.isEmpty()) {
+            throw new NoStockAvailableException(
+                "No vendor has " + quantity + " units in stock"
+            );
+        }
+
+        // 3. Return first result (cheapest with stock)
+        return availableVendors.get(0);
+    }
+}
+```
+
+**The Algorithm Visualized:**
+
+```
+Order: 10 widgets
+
+Step 1: Find vendors selling "widget"
+┌─────────────────────────────────────┐
+│ Vendor Alpha   │ $50.00 │ Stock: 100│ ✓ Has stock
+│ Vendor Beta    │ $45.00 │ Stock: 50 │ ✓ Has stock
+│ Vendor Charlie │ $40.00 │ Stock: 0  │ ✗ No stock (eliminated)
+└─────────────────────────────────────┘
+
+Step 2: Filter by stock >= 10
+┌─────────────────────────────────────┐
+│ Vendor Alpha   │ $50.00 │ Stock: 100│ ✓ Enough stock
+│ Vendor Beta    │ $45.00 │ Stock: 50 │ ✓ Enough stock
+└─────────────────────────────────────┘
+
+Step 3: Sort by price (ascending)
+┌─────────────────────────────────────┐
+│ Vendor Beta    │ $45.00 │ Stock: 50 │ ← WINNER!
+│ Vendor Alpha   │ $50.00 │ Stock: 100│
+└─────────────────────────────────────┘
+
+Result: Order allocated to Vendor Beta at $45.00/unit
+```
+
+**Why This Is Smart:**
+
+- ✅ Always picks cheapest option
+- ✅ Never picks vendors without stock
+- ✅ Handles "no stock available" gracefully
+- ✅ Single database query (efficient!)
+
+### OrderService - Creating Orders
+
+```java
+@Service
+@RequiredArgsConstructor
+@Transactional  // All-or-nothing: either full order succeeds or nothing changes
+public class OrderService {
+
+    private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
+    private final AllocationService allocationService;
+    private final VendorProductRepository vendorProductRepository;
+
+    public Order createOrder(OrderRequest request) {
+
+        // 1. Validate product exists
+        Product product = productRepository.findById(request.getProductId())
+            .orElseThrow(() -> new ProductNotFoundException(
+                "Product not found: " + request.getProductId()
+            ));
+
+        // 2. Find best vendor (cheapest with stock)
+        VendorProduct bestVendor = allocationService.findBestVendor(
+            request.getProductId(),
+            request.getQuantity()
+        );
+
+        // 3. Check if vendor has enough stock
+        if (bestVendor.getStock() < request.getQuantity()) {
+            throw new InsufficientStockException(
+                "Vendor only has " + bestVendor.getStock() + " units"
+            );
+        }
+
+        // 4. Calculate total price
+        BigDecimal totalPrice = bestVendor.getPrice()
+            .multiply(BigDecimal.valueOf(request.getQuantity()));
+
+        // 5. Deduct stock (important!)
+        bestVendor.setStock(bestVendor.getStock() - request.getQuantity());
+        vendorProductRepository.save(bestVendor);
+
+        // 6. Create order record
+        Order order = new Order();
+        order.setVendor(bestVendor.getVendor());
+        order.setProduct(product);
+        order.setQuantity(request.getQuantity());
+        order.setTotalPrice(totalPrice);
+        order.setStatus("ALLOCATED");
+        order.setCreatedAt(LocalDateTime.now());
+
+        return orderRepository.save(order);
+    }
+}
+```
+
+**The @Transactional Magic:**
+
+If step 6 fails (database error), step 5's stock reduction is **automatically rolled back**. Either everything succeeds or nothing changes.
+
+```
+Without @Transactional:
+    Deduct stock ✓
+    Save order ✗ (error!)
+    Result: Stock reduced but no order created! 😱
+
+With @Transactional:
+    Deduct stock ✓
+    Save order ✗ (error!)
+    Rollback: Stock restored ✓
+    Result: No changes, consistent state 😌
+```
 
 ---
 
-### How Data Loading Works
+## API Layer - The Front Desk
 
-1. App starts → Hibernate creates tables from entity annotations
-2. Spring sees `spring.sql.init.mode=always` in config
-3. Spring runs `data.sql` after tables exist
-4. Demo data is now available
+Controllers are the **front desk** - they:
+1. Receive HTTP requests
+2. Validate input
+3. Call services
+4. Return HTTP responses
 
-```yaml
-# application.yml
-spring:
-  sql:
-    init:
-      mode: always  # Run data.sql on startup
-  jpa:
-    defer-datasource-initialization: true  # Wait for schema first
+### AuthController - Login
+
+```java
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+
+        // Service handles authentication logic
+        String token = authService.login(request.getUsername(), request.getPassword());
+
+        // Return JWT token to client
+        return ResponseEntity.ok(new LoginResponse(token));
+    }
+}
 ```
+
+**Request:**
+```json
+POST /api/auth/login
+{
+  "username": "vendor-a",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ2ZW5kb3ItYSIsImV4cCI6MTY3ODg5NjAwMH0.abc123xyz"
+}
+```
+
+### VendorController - Vendor Operations
+
+```java
+@RestController
+@RequestMapping("/api/vendors")
+@RequiredArgsConstructor
+public class VendorController {
+
+    private final VendorService vendorService;
+    private final SecurityUtils securityUtils;
+
+    @GetMapping("/{id}/products")
+    public ResponseEntity<List<VendorProductResponse>> getProducts(
+        @PathVariable Long id
+    ) {
+        // Get currently logged-in vendor
+        Long currentVendorId = securityUtils.getCurrentVendorId();
+
+        // Security check: Can only view your own products
+        if (!currentVendorId.equals(id)) {
+            throw new VendorAccessDeniedException("Access denied");
+        }
+
+        List<VendorProductResponse> products = vendorService.getVendorProducts(id);
+        return ResponseEntity.ok(products);
+    }
+
+    @PostMapping("/{vendorId}/products/{productId}/price")
+    public ResponseEntity<PriceUpdateResponse> updatePrice(
+        @PathVariable Long vendorId,
+        @PathVariable Long productId,
+        @Valid @RequestBody PriceUpdateRequest request
+    ) {
+        vendorService.updatePrice(vendorId, productId, request.getNewPrice());
+
+        return ResponseEntity.ok(new PriceUpdateResponse(
+            "Price updated successfully",
+            request.getNewPrice()
+        ));
+    }
+}
+```
+
+**Key Patterns:**
+
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `@PathVariable` | Extract from URL | `/vendors/{id}` → `id` parameter |
+| `@RequestBody` | Parse JSON body | `{"newPrice": 45.99}` → `PriceUpdateRequest` object |
+| `@Valid` | Validate input | Checks `@NotNull`, `@Min`, etc. |
+| `ResponseEntity.ok()` | Return HTTP 200 | Wraps response with status code |
+
+### OrderController - Creating Orders
+
+```java
+@RestController
+@RequestMapping("/api/orders")
+@RequiredArgsConstructor
+public class OrderController {
+
+    private final OrderService orderService;
+
+    @PostMapping
+    public ResponseEntity<OrderResponse> createOrder(
+        @Valid @RequestBody OrderRequest request
+    ) {
+        Order order = orderService.createOrder(request);
+        OrderResponse response = toDTO(order);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id) {
+        Order order = orderService.getOrderById(id);
+        return ResponseEntity.ok(toDTO(order));
+    }
+}
+```
+
+**Request:**
+```json
+POST /api/orders
+{
+  "productId": 1,
+  "quantity": 10
+}
+```
+
+**Response:**
+```json
+HTTP 201 Created
+{
+  "id": 1,
+  "vendorName": "Vendor Beta",
+  "productName": "Widget",
+  "quantity": 10,
+  "totalPrice": 450.00,
+  "status": "ALLOCATED",
+  "createdAt": "2026-01-22T10:30:00"
+}
+```
+
+### DTOs - Data Transfer Objects
+
+**Why DTOs?**
+
+```
+❌ BAD: Return entities directly
+
+@GetMapping("/vendors/{id}")
+public Vendor getVendor(@PathVariable Long id) {
+    return vendorRepository.findById(id);
+}
+
+Response includes:
+{
+  "id": 1,
+  "username": "vendor-a",
+  "password": "$2a$10$N9qo8uLO...",  ← Oops! Password leaked!
+  "createdAt": "2026-01-22T10:30:00"
+}
+
+
+✅ GOOD: Use DTOs
+
+@GetMapping("/vendors/{id}")
+public VendorResponse getVendor(@PathVariable Long id) {
+    Vendor vendor = vendorRepository.findById(id);
+    return new VendorResponse(vendor.getId(), vendor.getName());
+}
+
+Response:
+{
+  "id": 1,
+  "name": "Vendor Alpha"
+}
+Only what client needs!
+```
+
+**DTO Pattern:**
+
+| Purpose | DTO Type | Example |
+|---------|----------|---------|
+| **Request** | What client sends | `OrderRequest`, `LoginRequest` |
+| **Response** | What client receives | `OrderResponse`, `VendorProductResponse` |
+
+**Benefits:**
+- ✅ Security: Don't expose passwords, internal IDs
+- ✅ Flexibility: Can change entity without breaking API
+- ✅ Clarity: API contract is explicit
+- ✅ Validation: Use `@Valid`, `@NotNull`, `@Min`, etc.
 
 ---
 
-### Viewing the Data
+## The Intelligent Order Allocation
 
-#### Option 1: H2 Console
-
-1. Go to `http://localhost:8080/h2-console`
-2. Enter JDBC URL: `jdbc:h2:mem:moyodb`
-3. Username: `sa`, Password: (empty)
-4. Run queries:
-
-```sql
-SELECT * FROM vendors;
-SELECT * FROM products;
-SELECT * FROM vendor_products;
-```
-
-#### Option 2: Application Logs
-
-With `show-sql: true`, you'll see Hibernate queries in the console:
+### The Complete Flow
 
 ```
-Hibernate: select v1_0.id, v1_0.username, ... from vendors v1_0
+┌─────────────────────────────────────────────────────────────────┐
+│                    USER CREATES ORDER                            │
+│                                                                  │
+│  POST /api/orders                                                │
+│  {"productId": 1, "quantity": 10}                                │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   1. VALIDATE PRODUCT                            │
+│                                                                  │
+│  ProductRepository.findById(1)                                   │
+│  ✓ Product exists: "Widget"                                     │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   2. FIND BEST VENDOR                            │
+│                                                                  │
+│  AllocationService.findBestVendor(productId=1, quantity=10)      │
+│                                                                  │
+│  Query: findByProductIdAndStockGreaterThanOrderByPriceAsc()      │
+│                                                                  │
+│  Results:                                                        │
+│    Vendor Beta:    $45.00/unit, stock=50   ← SELECTED           │
+│    Vendor Alpha:   $50.00/unit, stock=100                        │
+│    Vendor Charlie: $40.00/unit, stock=0    (eliminated)          │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   3. VERIFY STOCK                                │
+│                                                                  │
+│  Vendor Beta has 50 units                                        │
+│  Need 10 units                                                   │
+│  ✓ Sufficient stock                                             │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   4. CALCULATE PRICE                             │
+│                                                                  │
+│  $45.00 × 10 = $450.00                                           │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   5. DEDUCT STOCK                                │
+│                                                                  │
+│  Vendor Beta stock: 50 → 40                                      │
+│  UPDATE vendor_products SET stock = 40 WHERE ...                 │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   6. CREATE ORDER                                │
+│                                                                  │
+│  INSERT INTO orders (vendor_id, product_id, quantity, ...)       │
+│  Status: ALLOCATED                                               │
+└─────────────────────────┬───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   7. RETURN RESPONSE                             │
+│                                                                  │
+│  {                                                               │
+│    "id": 1,                                                      │
+│    "vendorName": "Vendor Beta",                                  │
+│    "quantity": 10,                                               │
+│    "totalPrice": 450.00,                                         │
+│    "status": "ALLOCATED"                                         │
+│  }                                                               │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+### What Makes It "Intelligent"?
+
+1. **Always picks cheapest available vendor** - Saves money automatically
+2. **Never allocates to out-of-stock vendors** - No failed orders
+3. **Single query** - Efficient (no N+1 query problems)
+4. **Transactional** - Stock and order are consistent
+5. **Graceful failures** - Clear error messages when no stock available
+
+### Edge Cases Handled
+
+| Scenario | System Response |
+|----------|-----------------|
+| Product doesn't exist | `404 Not Found: Product not found` |
+| No vendors sell this product | `404 Not Found: No vendors found for this product` |
+| All vendors out of stock | `400 Bad Request: No stock available` |
+| Stock insufficient (need 100, have 50) | `400 Bad Request: Insufficient stock` |
+| Multiple vendors same price | Picks first one (deterministic) |
+| Concurrent orders for same stock | Transaction isolation prevents overselling |
 
 ---
 
-### Project Structure After Story 1.3
+## Complete Request Flow
+
+### Full Journey: Login → View Products → Update Price → Create Order
 
 ```
-src/main/java/com/moyo/oms/
-├── model/
-│   ├── Vendor.java           ← Entity
-│   ├── Product.java          ← Entity
-│   └── VendorProduct.java    ← Entity
-├── repository/
-│   ├── VendorRepository.java         ← Data access
-│   ├── ProductRepository.java        ← Data access
-│   └── VendorProductRepository.java  ← Data access
-└── ...
-
-src/main/resources/
-├── application.yml           ← Configuration
-└── data.sql                  ← Seed data
-
-src/test/resources/
-└── application.yml           ← Test configuration (disables seed data)
+┌──────────┐                                     ┌──────────┐
+│  Client  │                                     │  Server  │
+└─────┬────┘                                     └─────┬────┘
+      │                                                │
+      │ 1. POST /api/auth/login                       │
+      │    {username: "vendor-a", password: "..."}    │
+      ├──────────────────────────────────────────────►│
+      │                                                │
+      │                                                │ AuthService.login()
+      │                                                │ - Load vendor from DB
+      │                                                │ - Verify password (BCrypt)
+      │                                                │ - Generate JWT token
+      │                                                │
+      │ {token: "eyJhbGc..."}                          │
+      │◄──────────────────────────────────────────────┤
+      │                                                │
+      │ Store token in memory/localStorage             │
+      │                                                │
+      │                                                │
+      │ 2. GET /api/vendors/1/products                 │
+      │    Authorization: Bearer eyJhbGc...            │
+      ├──────────────────────────────────────────────►│
+      │                                                │
+      │                                                │ JwtAuthenticationFilter
+      │                                                │ - Extract token
+      │                                                │ - Validate signature
+      │                                                │ - Check expiration
+      │                                                │ - Set authentication
+      │                                                │
+      │                                                │ VendorController
+      │                                                │ - Check: currentUser = vendor-a
+      │                                                │ - Authorize: vendor-a can view vendor 1
+      │                                                │
+      │                                                │ VendorService
+      │                                                │ - Fetch vendor products from DB
+      │                                                │
+      │ [{productCode: "widget-001", price: 50.00, ...}]│
+      │◄──────────────────────────────────────────────┤
+      │                                                │
+      │                                                │
+      │ 3. POST /api/vendors/1/products/1/price        │
+      │    {newPrice: 45.00}                           │
+      ├──────────────────────────────────────────────►│
+      │                                                │
+      │                                                │ Authentication check ✓
+      │                                                │ Authorization check ✓
+      │                                                │
+      │                                                │ VendorService
+      │                                                │ - Validate price > 0 ✓
+      │                                                │ - Update vendor_products
+      │                                                │ - Save to database
+      │                                                │
+      │ {message: "Price updated", newPrice: 45.00}    │
+      │◄──────────────────────────────────────────────┤
+      │                                                │
+      │                                                │
+      │ 4. POST /api/orders                            │
+      │    {productId: 1, quantity: 10}                │
+      ├──────────────────────────────────────────────►│
+      │                                                │
+      │                                                │ OrderService
+      │                                                │ - Validate product exists ✓
+      │                                                │
+      │                                                │ AllocationService
+      │                                                │ - Find cheapest vendor with stock
+      │                                                │ - Result: Vendor Beta ($45.00)
+      │                                                │
+      │                                                │ OrderService (continued)
+      │                                                │ - Check stock ✓
+      │                                                │ - Calculate total: $450.00
+      │                                                │ - Deduct stock: 50 → 40
+      │                                                │ - Create order record
+      │                                                │
+      │ {id: 1, vendorName: "Beta", total: 450.00}     │
+      │◄──────────────────────────────────────────────┤
+      │                                                │
 ```
+
+### Request Headers Breakdown
+
+```http
+GET /api/vendors/1/products HTTP/1.1
+Host: localhost:8080
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ2ZW5kb3ItYSIsImV4cCI6MTY3ODg5NjAwMH0.abc123xyz
+Content-Type: application/json
+```
+
+| Header | Purpose |
+|--------|---------|
+| `Host` | Which server to connect to |
+| `Authorization` | JWT token for authentication |
+| `Content-Type` | Format of request body (JSON) |
+
+### HTTP Status Codes
+
+| Code | Meaning | Example |
+|------|---------|---------|
+| `200 OK` | Success | GET /api/vendors |
+| `201 Created` | Resource created | POST /api/orders |
+| `400 Bad Request` | Invalid input | Negative price |
+| `401 Unauthorized` | No/invalid token | Missing Authorization header |
+| `403 Forbidden` | Valid token, no permission | Vendor A accessing Vendor B's data |
+| `404 Not Found` | Resource doesn't exist | Product ID 999 doesn't exist |
+| `500 Internal Server Error` | Server bug | Uncaught exception |
 
 ---
 
-### Common Issues & Solutions
+## Testing Strategy
 
-| Problem | Cause | Solution |
-|---------|-------|----------|
-| "Table not found" in data.sql | Schema not created yet | Set `defer-datasource-initialization: true` |
-| "Unique constraint violation" | Duplicate data | H2 is in-memory, restarts fresh each time |
-| Tests fail with constraint errors | Seed data conflicts with test data | Use separate `src/test/resources/application.yml` with `sql.init.mode: never` |
-| "Could not determine type for: Vendor" | Missing `@Entity` annotation | Add `@Entity` to your class |
+### The Testing Pyramid
+
+```
+                    ┌─────┐
+                    │  E2E │       Few (expensive, slow)
+                    │Tests │
+                  ┌─┴─────┴─┐
+                  │Integration│   Some (moderate cost/speed)
+                  │  Tests    │
+              ┌───┴───────────┴───┐
+              │   Unit Tests       │  Many (cheap, fast)
+              └────────────────────┘
+```
+
+### What We Test
+
+| Layer | Test Type | Example | What It Tests |
+|-------|-----------|---------|---------------|
+| **Repository** | Integration | `VendorRepositoryTest` | Database queries work correctly |
+| **Service** | Unit | `AllocationServiceTest` | Business logic is correct (mocked dependencies) |
+| **Controller** | Integration | `OrderControllerIntegrationTest` | Full HTTP → DB flow |
+| **Security** | Integration | `SecurityConfigIntegrationTest` | JWT auth works end-to-end |
+
+### Example: Testing the Allocation Algorithm
+
+```java
+@SpringBootTest
+class AllocationServiceIntegrationTest {
+
+    @Autowired
+    private AllocationService allocationService;
+
+    @Autowired
+    private VendorProductRepository vendorProductRepository;
+
+    @Test
+    void shouldSelectCheapestVendorWithStock() {
+        // Given: 3 vendors
+        // Vendor A: $50, stock=100
+        // Vendor B: $45, stock=50   ← Should be selected
+        // Vendor C: $40, stock=0
+
+        // When: Request 10 units
+        VendorProduct result = allocationService.findBestVendor(1L, 10);
+
+        // Then: Vendor B is selected
+        assertEquals("Vendor Beta", result.getVendor().getName());
+        assertEquals(new BigDecimal("45.00"), result.getPrice());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNoStock() {
+        // Given: All vendors have 0 stock
+        vendorProductRepository.findAll().forEach(vp -> {
+            vp.setStock(0);
+            vendorProductRepository.save(vp);
+        });
+
+        // When/Then: Should throw NoStockAvailableException
+        assertThrows(NoStockAvailableException.class, () -> {
+            allocationService.findBestVendor(1L, 10);
+        });
+    }
+}
+```
+
+### Manual Testing with Swagger
+
+1. **Start app:** `mvn spring-boot:run`
+2. **Open Swagger:** http://localhost:8080/swagger-ui.html
+3. **Login:**
+   - POST `/api/auth/login`
+   - Body: `{"username": "vendor-a", "password": "password123"}`
+   - Copy token from response
+4. **Authorize:**
+   - Click "Authorize" button (top right)
+   - Enter: `Bearer <your-token>`
+5. **Test endpoints:**
+   - GET `/api/vendors` - List all vendors
+   - GET `/api/vendors/1/products` - View vendor's products
+   - POST `/api/orders` - Create order
 
 ---
 
-## 12. Quick Reference
+## Quick Reference
 
 ### Key URLs
 
@@ -1200,6 +1359,14 @@ src/test/resources/
 | `http://localhost:8080/api/health` | Health check endpoint |
 | `http://localhost:8080/swagger-ui.html` | API documentation |
 | `http://localhost:8080/h2-console` | Database viewer |
+
+### Demo Credentials
+
+| Vendor | Username | Password | Price | Stock |
+|--------|----------|----------|-------|-------|
+| Vendor Alpha | `vendor-a` | `password123` | $50.00 | 100 |
+| Vendor Beta | `vendor-b` | `password123` | $45.00 | 50 |
+| Vendor Charlie | `vendor-c` | `password123` | $40.00 | 0 |
 
 ### Common Maven Commands
 
@@ -1219,41 +1386,188 @@ src/test/resources/
 | `docker-compose down` | Stop containers |
 | `docker-compose logs -f moyo-oms` | View live logs |
 
-### Key Files Summary
+### Key Files
 
-| File | Purpose |
-|------|---------|
-| `pom.xml` | Dependencies and build config |
-| `MoyoOmsApplication.java` | Entry point |
-| `application.yml` | App configuration |
-| `application-docker.yml` | Docker-specific config |
-| `SecurityConfig.java` | Security rules |
-| `SwaggerConfig.java` | API docs metadata |
-| `HealthController.java` | Sample endpoint |
-| `Dockerfile` | Container build instructions |
-| `docker-compose.yml` | Container orchestration |
-| `model/Vendor.java` | Vendor entity |
-| `model/Product.java` | Product entity |
-| `model/VendorProduct.java` | Vendor-Product relationship entity |
-| `repository/*Repository.java` | Database access interfaces |
-| `data.sql` | Demo seed data |
+| File | Purpose | Key Points |
+|------|---------|------------|
+| `pom.xml` | Maven dependencies | Spring Boot, Security, JWT, JPA |
+| `application.yml` | App configuration | Port, database, JWT expiration |
+| `SecurityConfig.java` | Security rules | Stateless JWT, public endpoints |
+| `JwtAuthenticationFilter.java` | JWT validation | Extracts & validates token |
+| `AllocationService.java` | **The magic** | Finds cheapest vendor with stock |
+| `OrderService.java` | Order creation | Allocates + deducts stock |
+| `data.sql` | Seed data | Demo vendors & products |
+
+### API Endpoints
+
+| Method | Endpoint | Auth? | Purpose |
+|--------|----------|-------|---------|
+| POST | `/api/auth/login` | No | Get JWT token |
+| GET | `/api/health` | No | Health check |
+| GET | `/api/vendors` | Yes | List all vendors |
+| GET | `/api/vendors/{id}` | Yes | Get vendor details |
+| GET | `/api/vendors/{id}/products` | Yes | Get vendor's products |
+| POST | `/api/vendors/{id}/products/{pid}/price` | Yes | Update price |
+| POST | `/api/vendors/{id}/products/{pid}/stock` | Yes | Update stock |
+| POST | `/api/orders` | Yes | Create order (allocates to best vendor) |
+| GET | `/api/orders/{id}` | Yes | Get order details |
+
+---
+
+## Architecture Diagram
+
+### The Complete System
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         CLIENT (Browser/Postman)                │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ HTTP + JWT
+                               │
+┌──────────────────────────────▼──────────────────────────────────┐
+│                      SPRING BOOT APPLICATION                     │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │              SECURITY LAYER (Filter Chain)                │  │
+│  │  ┌─────────────────────────────────────────────────────┐  │  │
+│  │  │ JwtAuthenticationFilter                             │  │  │
+│  │  │ - Extract JWT from Authorization header             │  │  │
+│  │  │ - Validate signature & expiration                   │  │  │
+│  │  │ - Set authenticated user in SecurityContext         │  │  │
+│  │  └─────────────────────────────────────────────────────┘  │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│                              │                                   │
+│  ┌───────────────────────────▼───────────────────────────────┐  │
+│  │                    CONTROLLER LAYER                       │  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
+│  │  │    Auth      │  │   Vendor     │  │    Order     │   │  │
+│  │  │  Controller  │  │  Controller  │  │  Controller  │   │  │
+│  │  │              │  │              │  │              │   │  │
+│  │  │ - Login      │  │ - List       │  │ - Create     │   │  │
+│  │  │              │  │ - View       │  │ - View       │   │  │
+│  │  │              │  │ - Update     │  │              │   │  │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘   │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│                              │                                   │
+│  ┌───────────────────────────▼───────────────────────────────┐  │
+│  │                     SERVICE LAYER                         │  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
+│  │  │    Auth      │  │   Vendor     │  │    Order     │   │  │
+│  │  │   Service    │  │   Service    │  │   Service    │   │  │
+│  │  │              │  │              │  │              │   │  │
+│  │  │ - Verify     │  │ - Get        │  │ - Validate   │   │  │
+│  │  │   password   │  │   products   │  │ - Allocate   │   │  │
+│  │  │ - Generate   │  │ - Update     │  │ - Deduct     │   │  │
+│  │  │   JWT        │  │   price      │  │   stock      │   │  │
+│  │  └──────────────┘  └──────────────┘  └──────┬───────┘   │  │
+│  │                                              │           │  │
+│  │                    ┌──────────────┐          │           │  │
+│  │                    │  Allocation  │◄─────────┘           │  │
+│  │                    │   Service    │                      │  │
+│  │                    │              │                      │  │
+│  │                    │ - Find best  │                      │  │
+│  │                    │   vendor     │                      │  │
+│  │                    └──────────────┘                      │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│                              │                                   │
+│  ┌───────────────────────────▼───────────────────────────────┐  │
+│  │                   REPOSITORY LAYER                        │  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
+│  │  │   Vendor     │  │   Product    │  │    Order     │   │  │
+│  │  │  Repository  │  │  Repository  │  │  Repository  │   │  │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘   │  │
+│  │                                                           │  │
+│  │           ┌──────────────────────┐                       │  │
+│  │           │   VendorProduct      │                       │  │
+│  │           │     Repository       │                       │  │
+│  │           │                      │                       │  │
+│  │           │ - Smart query here   │                       │  │
+│  │           └──────────────────────┘                       │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│                              │ JPA/Hibernate                     │
+│  ┌───────────────────────────▼───────────────────────────────┐  │
+│  │                    DATABASE (H2)                          │  │
+│  │  ┌──────────┐  ┌─────────────────┐  ┌─────────┐         │  │
+│  │  │ vendors  │  │ vendor_products │  │products │         │  │
+│  │  └──────────┘  └─────────────────┘  └─────────┘         │  │
+│  │                      ┌────────┐                          │  │
+│  │                      │ orders │                          │  │
+│  │                      └────────┘                          │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Key Takeaways
+
+### What You Built
+
+1. **A Production-Ready API** - Not a toy project, this has real architectural patterns
+2. **Intelligent Business Logic** - The allocation algorithm is genuinely smart
+3. **Enterprise Security** - JWT authentication is what Netflix, Uber, etc. use
+4. **Clean Architecture** - Layered design makes it maintainable
+5. **Comprehensive Testing** - Unit + integration tests cover critical paths
+
+### Technologies You Now Understand
+
+- ✅ **Spring Boot** - Modern Java web development
+- ✅ **Spring Security** - Authentication & authorization
+- ✅ **JWT** - Stateless authentication
+- ✅ **JPA/Hibernate** - Object-relational mapping
+- ✅ **REST APIs** - HTTP methods, status codes, JSON
+- ✅ **Docker** - Containerization
+- ✅ **Maven** - Build automation
+- ✅ **Swagger/OpenAPI** - API documentation
+
+### Patterns You Applied
+
+- ✅ **Layered Architecture** - Controllers → Services → Repositories
+- ✅ **DTO Pattern** - Separate API contracts from domain models
+- ✅ **Repository Pattern** - Abstract database access
+- ✅ **Dependency Injection** - Spring manages object creation
+- ✅ **Transaction Management** - `@Transactional` ensures consistency
+- ✅ **Filter Chain** - JWT validation before request processing
+
+### What Makes This Special
+
+**Most "tutorial projects" teach you to:**
+- ❌ Return entities directly from controllers
+- ❌ Put business logic in controllers
+- ❌ Store passwords in plain text
+- ❌ Skip validation and error handling
+- ❌ Ignore security
+
+**This project demonstrates:**
+- ✅ DTOs for API contracts
+- ✅ Service layer for business logic
+- ✅ BCrypt password hashing
+- ✅ Comprehensive validation
+- ✅ Production-grade security with JWT
 
 ---
 
 ## What's Next?
 
-This is the foundation. Future stories will add:
+You could enhance this system with:
 
-- ~~**Entities** - Java classes that map to database tables~~ ✅ Done (Story 1.3)
-- ~~**Repositories** - Interfaces for database operations~~ ✅ Done (Story 1.3)
-- ~~**Database with Seed Data** - Demo data for testing~~ ✅ Done (Story 1.3)
-- **Services** - Business logic layer
-- **More Controllers** - API endpoints for vendors, products, orders
-- **JWT Security** - Real authentication with tokens
+1. **Frontend** - React/Angular UI for vendors to manage inventory
+2. **Message Queues** - RabbitMQ for async order processing
+3. **Caching** - Redis for frequently accessed data
+4. **Monitoring** - Prometheus + Grafana for metrics
+5. **Real Database** - PostgreSQL instead of H2
+6. **Cloud Deployment** - Deploy to AWS/Azure/Heroku
+7. **Advanced Features**:
+   - Multi-vendor orders (split across vendors)
+   - Vendor ratings (prefer higher-rated vendors)
+   - Delivery time estimates
+   - Payment processing
+   - Order tracking
 
 ---
 
+**You built this. You understand this. You can explain this in interviews.**
+
 *Created: January 2026*
-*Updated: January 2026 (Added Database Entities & Seed Data section)*
-*Updated: January 2026 (Code Review: Added stateless session config, Docker curl install, explicit docker profile settings)*
-*For: Moyo Order Management System - Stories 1.1, 1.2 & 1.3*
+*Last Updated: January 2026*
+*Covers: Complete implementation (Stories 1.x - 4.x)*
+*For: Moyo Order Management System*
