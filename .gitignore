@@ -67,3 +67,6 @@ nul
 .claude/
 _bmad/
 _bmad-output/
+
+### Documentation - Exclude Case Study ###
+Docs/Software Development - Case Study.pdf
