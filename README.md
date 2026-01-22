@@ -154,7 +154,7 @@ This implementation represents the **Order Management System** component from Mo
 
 ### Detailed Setup
 
-See [START_GUIDE.md](START_GUIDE.md) for comprehensive startup instructions including troubleshooting.
+See [START_GUIDE.md](documentation/START_GUIDE.md) for comprehensive startup instructions including troubleshooting.
 
 ## API Documentation
 
@@ -245,10 +245,10 @@ Multi-layer security approach:
 
 Comprehensive testing documentation is provided:
 
-1. **Quick Start Test** (5 minutes): [QUICK_START_TEST.md](QUICK_START_TEST.md)
-2. **Complete Test Suite** (30-60 minutes): [MANUAL_TESTING_CHECKLIST.md](MANUAL_TESTING_CHECKLIST.md)
-3. **Testing Guide**: [TESTING_README.md](TESTING_README.md)
-4. **Results Template**: [TEST_RESULTS_TEMPLATE.md](TEST_RESULTS_TEMPLATE.md)
+1. **Quick Start Test** (5 minutes): [QUICK_START_TEST.md](documentation/QUICK_START_TEST.md)
+2. **Complete Test Suite** (30-60 minutes): [MANUAL_TESTING_CHECKLIST.md](documentation/MANUAL_TESTING_CHECKLIST.md)
+3. **Testing Guide**: [TESTING_README.md](documentation/TESTING_README.md)
+4. **Results Template**: [TEST_RESULTS_TEMPLATE.md](documentation/TEST_RESULTS_TEMPLATE.md)
 
 ### Test Coverage
 
@@ -345,14 +345,17 @@ moyo-oms/
 │   │       ├── application.yml   # Application configuration
 │   │       └── data.sql          # Sample data initialization
 │   └── test/                     # Unit and integration tests
-├── docs/                         # Additional documentation
+├── documentation/                # All project documentation
+│   ├── README.md                # Documentation index
+│   ├── complete-development-guide.md  # Comprehensive dev guide
+│   ├── START_GUIDE.md           # Detailed startup guide
+│   ├── QUICK_START_TEST.md      # Quick testing guide
+│   ├── MANUAL_TESTING_CHECKLIST.md    # Comprehensive test cases
+│   ├── TESTING_README.md        # Testing documentation
+│   └── TEST_RESULTS_TEMPLATE.md # Test results template
 ├── docker-compose.yml            # Docker composition
 ├── Dockerfile                    # Container definition
 ├── pom.xml                       # Maven dependencies
-├── START_GUIDE.md               # Detailed startup guide
-├── QUICK_START_TEST.md          # Quick testing guide
-├── MANUAL_TESTING_CHECKLIST.md  # Comprehensive test cases
-├── TESTING_README.md            # Testing documentation
 └── README.md                    # This file
 ```
 
@@ -483,13 +486,6 @@ This project was developed as a case study demonstration. Suggestions and improv
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact & Links
-
-**Developer**: [Your Name]
-**Email**: [Your Email]
-**LinkedIn**: [Your LinkedIn Profile]
-**Portfolio**: [Your Portfolio Website]
 
 ## Acknowledgments
 
