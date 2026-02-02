@@ -6,6 +6,9 @@ export function render() {
     <div class="login-wrapper">
       <div class="card login-card">
         <h1>Moyo OMS</h1>
+        <div style="text-align:center;margin-bottom:0.5rem">
+          <button id="login-theme-toggle" class="theme-toggle-inline" title="Toggle dark mode">${document.documentElement.getAttribute('data-theme') === 'dark' ? '🌙' : '☀️'}</button>
+        </div>
         <p class="subtitle">Vendor Login</p>
         <div id="login-msg"></div>
         <form id="login-form">
@@ -21,6 +24,16 @@ export function render() {
         </form>
       </div>
     </div>`;
+
+  document.getElementById('login-theme-toggle').addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    document.getElementById('login-theme-toggle').textContent = next === 'dark' ? '🌙' : '☀️';
+    const navToggle = document.getElementById('theme-toggle');
+    if (navToggle) navToggle.textContent = next === 'dark' ? '🌙' : '☀️';
+  });
 
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
