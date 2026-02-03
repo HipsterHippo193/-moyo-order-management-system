@@ -220,7 +220,7 @@ When an order is created:
 6. Return order confirmation with vendor details
 ```
 
-**Implementation**: `OrderService.createOrder()` at [src/main/java/com/moyo/oms/service/OrderService.java](src/main/java/com/moyo/oms/service/OrderService.java) (package namespace retained as `com.moyo.oms`)
+**Implementation**: `OrderService.createOrder()` at [src/main/java/com/fuchs/oms/service/OrderService.java](src/main/java/com/fuchs/oms/service/OrderService.java) (package namespace retained as `com.fuchs.oms`)
 
 ### 2. Real-Time Inventory Management
 
@@ -237,7 +237,7 @@ Multi-layer security approach:
 - **Role-Based Access**: Spring Security with custom UserDetails
 - **Public Endpoints**: Health check and Swagger accessible without auth
 
-**Security Config**: [src/main/java/com/moyo/oms/config/SecurityConfig.java](src/main/java/com/moyo/oms/config/SecurityConfig.java)
+**Security Config**: [src/main/java/com/fuchs/oms/config/SecurityConfig.java](src/main/java/com/fuchs/oms/config/SecurityConfig.java)
 
 ## Testing
 
@@ -331,7 +331,7 @@ Access H2 Console at: http://localhost:8080/h2-console
 fuchs-oms/
 ├── src/
 │   ├── main/
-│   │   ├── java/com/moyo/oms/
+│   │   ├── java/com/fuchs/oms/
 │   │   │   ├── config/           # Security, Swagger configuration
 │   │   │   ├── controller/       # REST API endpoints
 │   │   │   ├── dto/              # Request/Response DTOs
