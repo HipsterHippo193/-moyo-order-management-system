@@ -44,7 +44,22 @@ body {
 
 .navbar.hidden { display: none; }
 
-.nav-brand { font-weight: 700; font-size: 1.1rem; }
+.nav-brand {
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo {
+  height: 40px;
+  width: auto;
+}
+
+/* Theme-aware logo switching */
+.logo-dark { display: none; }
+.logo-light { display: block; }
+
+[data-theme="dark"] .logo-dark { display: block; }
+[data-theme="dark"] .logo-light { display: none; }
 
 .nav-links { display: flex; gap: 1rem; }
 
@@ -191,6 +206,18 @@ tbody tr:hover { background: rgba(37,99,235,0.06); }
 
 .login-card { width: 100%; max-width: 380px; }
 .login-card h1 { text-align: center; margin-bottom: 0.5rem; }
+
+.login-logo {
+  width: 200px;
+  height: auto;
+  margin: 0 auto 0.5rem auto;
+}
+
+.login-logo.logo-light { display: block; }
+.login-logo.logo-dark { display: none; }
+
+[data-theme="dark"] .login-logo.logo-light { display: none; }
+[data-theme="dark"] .login-logo.logo-dark { display: block; }
 .login-card .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem; }
 
 .register-link { text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); }
