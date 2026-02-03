@@ -10,38 +10,38 @@
 Expand the system from a vendor-only view into a full management platform with proper entity management.
 
 ### 1.1 Vendor Registration
-- [ ] **Backend**: `POST /api/auth/register` endpoint (username, password, vendor name)
-- [ ] **Backend**: Validation — unique username, password strength rules
-- [ ] **Frontend**: Registration page with form, link from login page
-- [ ] **Frontend**: Success message + redirect to login after registration
-- [ ] **Seed data**: Keep existing vendors, but registration is now the primary way to add vendors
+- [x] **Backend**: `POST /api/auth/register` endpoint (username, password, vendor name)
+- [x] **Backend**: Validation — unique username, password strength rules
+- [x] **Frontend**: Registration page with form, link from login page
+- [x] **Frontend**: Success message + redirect to login after registration
+- [x] **Seed data**: Keep existing vendors, but registration is now the primary way to add vendors
 
 ### 1.2 Product Categories
-- [ ] **Backend**: `Category` entity (id, name, description, createdAt)
-- [ ] **Backend**: `CategoryRepository` + `CategoryService`
-- [ ] **Backend**: Add `categoryId` foreign key to `Product` entity
-- [ ] **Backend**: `GET /api/categories` — list all categories
-- [ ] **Backend**: Seed data — add 4-5 default categories and assign existing products
-- [ ] **Frontend**: Category filter dropdown on product/order pages
+- [x] **Backend**: `Category` entity (id, name, description, createdAt)
+- [x] **Backend**: `CategoryRepository` + `CategoryService`
+- [x] **Backend**: Add `categoryId` foreign key to `Product` entity
+- [x] **Backend**: `GET /api/categories` — list all categories
+- [x] **Backend**: Seed data — add 4-5 default categories and assign existing products
+- [x] **Frontend**: Category filter dropdown on product/order pages
 
 ### 1.3 Product Catalog Management
-- [ ] **Backend**: `POST /api/products` — create a new product (name, code, description, categoryId)
-- [ ] **Backend**: `PUT /api/products/{id}` — edit product details
-- [ ] **Backend**: `DELETE /api/products/{id}` — remove product (only if no active orders)
-- [ ] **Backend**: `GET /api/products` — list all products (public catalog)
-- [ ] **Frontend**: Product catalog page — browse all available products
-- [ ] **Frontend**: Add/edit product form (admin or vendor depending on role decisions in Phase 3)
+- [x] **Backend**: `POST /api/products` — create a new product (name, code, description, categoryId)
+- [x] **Backend**: `PUT /api/products/{id}` — edit product details
+- [x] **Backend**: `DELETE /api/products/{id}` — remove product (only if no active orders)
+- [x] **Backend**: `GET /api/products` — list all products (public catalog)
+- [x] **Frontend**: Product catalog page — browse all available products
+- [x] **Frontend**: Add/edit product form (admin or vendor depending on role decisions in Phase 3)
 
 ### 1.4 Vendor-Product Enrollment
-- [ ] **Backend**: `POST /api/vendors/{vendorId}/products` — vendor adds a product they supply (set price + stock)
-- [ ] **Backend**: `DELETE /api/vendors/{vendorId}/products/{productId}` — vendor stops supplying a product
-- [ ] **Frontend**: "Browse catalog & enroll" flow — vendor picks products to supply, sets price/stock
-- [ ] **Frontend**: Dashboard shows only enrolled products (already works, just needs enrollment entry point)
+- [x] **Backend**: `POST /api/vendors/{vendorId}/products` — vendor adds a product they supply (set price + stock)
+- [x] **Backend**: `DELETE /api/vendors/{vendorId}/products/{productId}` — vendor stops supplying a product
+- [x] **Frontend**: "Browse catalog & enroll" flow — vendor picks products to supply, sets price/stock
+- [x] **Frontend**: Dashboard shows only enrolled products (already works, just needs enrollment entry point)
 
 ### 1.5 Seed Data Update
-- [ ] Add 3-5 categories (Electronics, Clothing, Home & Kitchen, Office Supplies, etc.)
-- [ ] Add 5-10 products spread across categories
-- [ ] Assign existing vendor inventory to match new product set
+- [x] Add 3-5 categories (Electronics, Clothing, Home & Kitchen, Office Supplies, etc.)
+- [x] Add 5-10 products spread across categories
+- [x] Assign existing vendor inventory to match new product set
 
 ---
 

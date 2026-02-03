@@ -22,6 +22,7 @@ export function render() {
           </div>
           <button type="submit" class="btn" style="width:100%">Login</button>
         </form>
+        <p class="register-link">Don't have an account? <a href="#register">Register here</a></p>
       </div>
     </div>`;
 

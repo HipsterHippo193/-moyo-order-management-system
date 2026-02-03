@@ -1,7 +1,9 @@
 import { isLoggedIn, clearAuth, getUsername } from './api.js';
 import { register, init } from './router.js';
 import { render as loginRender } from './pages/login.js';
+import { render as registerRender } from './pages/register.js';
 import { render as dashboardRender } from './pages/dashboard.js';
+import { render as catalogRender } from './pages/catalog.js';
 import { render as ordersRender } from './pages/orders.js';
 
 const navbar = document.getElementById('navbar');
@@ -42,7 +44,14 @@ register('#login', () => {
   loginRender();
 });
 
+register('#register', () => {
+  if (isLoggedIn()) { window.location.hash = '#dashboard'; return; }
+  navbar.classList.add('hidden');
+  registerRender();
+});
+
 register('#dashboard', guard(dashboardRender));
+register('#catalog', guard(catalogRender));
 register('#orders', guard(ordersRender));
 
 document.getElementById('logout-btn').addEventListener('click', () => {

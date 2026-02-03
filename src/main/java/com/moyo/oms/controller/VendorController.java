@@ -1,5 +1,6 @@
 package com.moyo.oms.controller;
 
+import com.moyo.oms.dto.EnrollProductRequest;
 import com.moyo.oms.dto.PriceUpdateRequest;
 import com.moyo.oms.dto.PriceUpdateResponse;
 import com.moyo.oms.dto.StockUpdateRequest;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,5 +94,51 @@ public class VendorController {
         }
         StockUpdateResponse response = vendorService.updateStock(vendorId, productId, request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{vendorId}/products")
+    @Operation(
+        summary = "Enroll in a product",
+        description = "Vendor enrolls in a product to start supplying it with a set price and stock"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Successfully enrolled in product"),
+        @ApiResponse(responseCode = "400", description = "Validation error"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing JWT"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - cannot enroll for another vendor"),
+        @ApiResponse(responseCode = "404", description = "Product not found"),
+        @ApiResponse(responseCode = "409", description = "Already enrolled in this product")
+    })
+    public ResponseEntity<VendorProductResponse> enrollProduct(
+            @PathVariable Long vendorId,
+            @Valid @RequestBody EnrollProductRequest request) {
+        Long currentVendorId = SecurityUtils.getCurrentVendorId();
+        if (!currentVendorId.equals(vendorId)) {
+            throw new VendorAccessDeniedException("Access denied: You can only enroll yourself in products");
+        }
+        VendorProductResponse response = vendorService.enrollProduct(vendorId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/{vendorId}/products/{productId}")
+    @Operation(
+        summary = "Unenroll from a product",
+        description = "Vendor stops supplying a product"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully unenrolled from product"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing JWT"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - cannot unenroll another vendor"),
+        @ApiResponse(responseCode = "404", description = "Vendor is not enrolled in this product")
+    })
+    public ResponseEntity<Void> unenrollProduct(
+            @PathVariable Long vendorId,
+            @PathVariable Long productId) {
+        Long currentVendorId = SecurityUtils.getCurrentVendorId();
+        if (!currentVendorId.equals(vendorId)) {
+            throw new VendorAccessDeniedException("Access denied: You can only unenroll yourself from products");
+        }
+        vendorService.unenrollProduct(vendorId, productId);
+        return ResponseEntity.noContent().build();
     }
 }

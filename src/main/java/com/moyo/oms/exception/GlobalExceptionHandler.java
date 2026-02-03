@@ -87,4 +87,64 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameAlreadyExists(UsernameAlreadyExistsException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            409,
+            Instant.now().toString()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(ProductInUseException.class)
+    public ResponseEntity<ErrorResponse> handleProductInUse(ProductInUseException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            409,
+            Instant.now().toString()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(ProductCodeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleProductCodeAlreadyExists(ProductCodeAlreadyExistsException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            409,
+            Instant.now().toString()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryNotFound(CategoryNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            404,
+            Instant.now().toString()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(AlreadyEnrolledException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyEnrolled(AlreadyEnrolledException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            409,
+            Instant.now().toString()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(VendorNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleVendorNotFound(VendorNotFoundException ex) {
+        ErrorResponse error = new ErrorResponse(
+            ex.getMessage(),
+            404,
+            Instant.now().toString()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
 }

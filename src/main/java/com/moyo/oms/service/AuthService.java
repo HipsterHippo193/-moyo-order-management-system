@@ -2,6 +2,9 @@ package com.moyo.oms.service;
 
 import com.moyo.oms.dto.LoginRequest;
 import com.moyo.oms.dto.LoginResponse;
+import com.moyo.oms.dto.RegisterRequest;
+import com.moyo.oms.dto.RegisterResponse;
+import com.moyo.oms.exception.UsernameAlreadyExistsException;
 import com.moyo.oms.model.Vendor;
 import com.moyo.oms.repository.VendorRepository;
 import com.moyo.oms.security.JwtTokenProvider;
@@ -32,6 +35,27 @@ public class AuthService {
 
         LoginResponse response = new LoginResponse();
         response.setToken(token);
+        return response;
+    }
+
+    @Transactional
+    public RegisterResponse register(RegisterRequest request) {
+        if (vendorRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new UsernameAlreadyExistsException(request.getUsername());
+        }
+
+        Vendor vendor = new Vendor();
+        vendor.setUsername(request.getUsername());
+        vendor.setPassword(passwordEncoder.encode(request.getPassword()));
+        vendor.setName(request.getVendorName());
+
+        Vendor savedVendor = vendorRepository.save(vendor);
+
+        RegisterResponse response = new RegisterResponse();
+        response.setVendorId(savedVendor.getId());
+        response.setUsername(savedVendor.getUsername());
+        response.setVendorName(savedVendor.getName());
+        response.setMessage("Registration successful");
         return response;
     }
 }

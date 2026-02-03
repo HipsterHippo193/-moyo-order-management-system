@@ -17,4 +17,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @return list of orders for this vendor, newest first
      */
     List<Order> findByAllocatedVendorIdOrderByCreatedAtDesc(Long vendorId);
+
+    /**
+     * Check if there are any active orders for a product.
+     * Used to prevent deletion of products with active orders.
+     *
+     * @param productId the product's ID
+     * @return true if there are orders for this product
+     */
+    boolean existsByProductId(Long productId);
 }
