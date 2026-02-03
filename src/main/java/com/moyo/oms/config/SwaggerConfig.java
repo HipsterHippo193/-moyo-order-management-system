@@ -15,7 +15,7 @@ public class SwaggerConfig {
     public OpenAPI openAPI() {
         return new OpenAPI()
             .info(new Info()
-                .title("Moyo Order Management System API")
+                .title("Fuchs Order Management System API")
                 .description("Vendor pricing, inventory, and order allocation system")
                 .version("1.0.0"))
             .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))

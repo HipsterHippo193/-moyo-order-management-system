@@ -1,6 +1,6 @@
 # Complete Startup Guide - No Hickups! 🚀
 
-This guide will help you start your Moyo Order Management System without any issues.
+This guide will help you start your Fuchs Order Management System without any issues.
 
 ---
 
@@ -74,7 +74,7 @@ Choose **ONE** method below:
 
 ### Step 1: Open Terminal in Project Directory
 ```bash
-cd "C:\Users\fuchs\Documents\Projects\Moyo Order Management System"
+cd "C:\Users\fuchs\Documents\Projects\Fuchs Order Management System"
 ```
 
 ### Step 2: Clean Previous Build (First Time Only)
@@ -90,7 +90,7 @@ mvn spring-boot:run
 ### Step 4: Wait for Success Message
 **Look for this in console**:
 ```
-Started MoyoOmsApplication in X.XXX seconds
+Started FuchsOmsApplication in X.XXX seconds
 ```
 
 **Common startup messages (these are NORMAL)**:
@@ -98,7 +98,7 @@ Started MoyoOmsApplication in X.XXX seconds
 - ✅ `HHH000412: Hibernate ORM core version`
 - ✅ `Database: jdbc:h2:mem:testdb`
 - ✅ `Tomcat started on port 8080`
-- ✅ `Started MoyoOmsApplication`
+- ✅ `Started FuchsOmsApplication`
 
 **If you see errors**, see Troubleshooting section below.
 
@@ -122,7 +122,7 @@ docker-compose up --build
 ### Step 3: Wait for Health Check
 Look for:
 ```
-moyo-oms-1  | Started MoyoOmsApplication
+fuchs-oms-1  | Started FuchsOmsApplication
 ```
 
 ### Step 4: Verify Container is Healthy
@@ -142,7 +142,7 @@ mvn clean package -DskipTests
 
 ### Step 2: Run JAR
 ```bash
-java -jar target/moyo-oms-0.0.1-SNAPSHOT.jar
+java -jar target/fuchs-oms-0.0.1-SNAPSHOT.jar
 ```
 
 ---
@@ -246,7 +246,7 @@ Then access at http://localhost:8081
 
 **Error message**:
 ```
-Error: Could not find or load main class com.moyo.oms.MoyoOmsApplication
+Error: Could not find or load main class com.fuchs.oms.FuchsOmsApplication
 ```
 
 **Solution**:
@@ -401,7 +401,7 @@ Use this checklist every time you start:
 - [ ] Port 8080 is available (or changed port in config)
 - [ ] In correct project directory
 - [ ] Run `mvn spring-boot:run`
-- [ ] Wait for "Started MoyoOmsApplication" message
+- [ ] Wait for "Started FuchsOmsApplication" message
 - [ ] Test http://localhost:8080/api/health (should return `{"status":"UP"}`)
 - [ ] Open http://localhost:8080/swagger-ui.html (should show API docs)
 - [ ] Test login endpoint in Swagger UI
@@ -414,7 +414,7 @@ Use this checklist every time you start:
 **Full startup sequence**:
 ```bash
 # Navigate to project
-cd "C:\Users\fuchs\Documents\Projects\Moyo Order Management System"
+cd "C:\Users\fuchs\Documents\Projects\Fuchs Order Management System"
 
 # Verify prerequisites
 java -version
@@ -427,7 +427,7 @@ netstat -ano | findstr :8080
 mvn spring-boot:run
 ```
 
-**Wait for**: `Started MoyoOmsApplication`
+**Wait for**: `Started FuchsOmsApplication`
 
 **Then open in browser**:
 - http://localhost:8080/swagger-ui.html
@@ -503,7 +503,7 @@ Try these if standard URLs don't work:
 
 **You know startup was successful when you see ALL of these**:
 
-1. ✅ Console shows: `Started MoyoOmsApplication in X.XXX seconds`
+1. ✅ Console shows: `Started FuchsOmsApplication in X.XXX seconds`
 2. ✅ No red ERROR messages in console (warnings are OK)
 3. ✅ http://localhost:8080/api/health returns `{"status":"UP"}`
 4. ✅ http://localhost:8080/swagger-ui.html loads without 401/404
@@ -527,7 +527,7 @@ Edit `application.yml`:
 ```yaml
 logging:
   level:
-    com.moyo.oms: DEBUG
+    com.fuchs.oms: DEBUG
     org.springframework: DEBUG
 ```
 

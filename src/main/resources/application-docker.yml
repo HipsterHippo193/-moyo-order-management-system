@@ -4,7 +4,7 @@
 spring:
   datasource:
     # H2 in-memory stays same for demo
-    url: jdbc:h2:mem:moyodb
+    url: jdbc:h2:mem:fuchsdb
     driver-class-name: org.h2.Driver
     username: sa
     password:

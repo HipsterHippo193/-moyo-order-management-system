@@ -1,6 +1,6 @@
 # Testing Documentation - Start Here! 📚
 
-Welcome to the Moyo Order Management System testing documentation.
+Welcome to the Fuchs Order Management System testing documentation.
 
 ---
 
@@ -63,7 +63,7 @@ Welcome to the Moyo Order Management System testing documentation.
 
 ## 🎯 What This Application Does
 
-Moyo Order Management System is a REST API that:
+Fuchs Order Management System is a REST API that:
 
 1. **Authenticates vendors** using JWT tokens
 2. **Manages vendor inventory** (prices and stock levels)

@@ -1,4 +1,4 @@
-# Moyo Order Management System
+# Fuchs Order Management System
 
 > A production-ready Order Management System implementing intelligent vendor allocation, real-time inventory management, and secure authentication.
 
@@ -8,13 +8,13 @@
 
 ## Overview
 
-This Order Management System (OMS) is a backend implementation of Moyo's case study for managing multi-vendor product ordering. The system intelligently allocates orders to vendors based on real-time pricing and inventory availability, ensuring optimal vendor selection for each order.
+This Order Management System (OMS) is a backend implementation for managing multi-vendor product ordering. The system intelligently allocates orders to vendors based on real-time pricing and inventory availability, ensuring optimal vendor selection for each order.
 
 Built as part of a software development case study, this project demonstrates enterprise-level Java development practices, RESTful API design, security implementation, and comprehensive testing strategies.
 
-### Case Study Context
+### System Context
 
-This implementation represents the **Order Management System** component from Moyo's "Online Order Solution" case study (Java Focused Stream). The system serves as the central hub that:
+This implementation represents a complete **Order Management System**. The system serves as the central hub that:
 - Manages vendor authentication and authorization
 - Enables vendors to configure pricing and inventory
 - Implements intelligent order allocation algorithms
@@ -127,7 +127,7 @@ This implementation represents the **Order Management System** component from Mo
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd "Moyo Order Management System"
+   cd "Fuchs Order Management System"
    ```
 
 2. **Run the application**
@@ -220,7 +220,7 @@ When an order is created:
 6. Return order confirmation with vendor details
 ```
 
-**Implementation**: `OrderService.createOrder()` at [src/main/java/com/moyo/oms/service/OrderService.java](src/main/java/com/moyo/oms/service/OrderService.java)
+**Implementation**: `OrderService.createOrder()` at [src/main/java/com/moyo/oms/service/OrderService.java](src/main/java/com/moyo/oms/service/OrderService.java) (package namespace retained as `com.moyo.oms`)
 
 ### 2. Real-Time Inventory Management
 
@@ -328,7 +328,7 @@ Access H2 Console at: http://localhost:8080/h2-console
 ## Project Structure
 
 ```
-moyo-oms/
+fuchs-oms/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/moyo/oms/
@@ -340,7 +340,7 @@ moyo-oms/
 │   │   │   ├── repository/       # Spring Data repositories
 │   │   │   ├── security/         # JWT filters, UserDetails
 │   │   │   ├── service/          # Business logic
-│   │   │   └── MoyoOmsApplication.java
+│   │   │   └── FuchsOmsApplication.java
 │   │   └── resources/
 │   │       ├── application.yml   # Application configuration
 │   │       └── data.sql          # Sample data initialization
@@ -405,7 +405,7 @@ mvn clean package
 ### Running the JAR
 
 ```bash
-java -jar target/moyo-oms-0.0.1-SNAPSHOT.jar
+java -jar target/oms-0.0.1-SNAPSHOT.jar
 ```
 
 ## Production Considerations
@@ -489,7 +489,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- **Moyo** - For the comprehensive case study and opportunity
 - **Spring Framework Team** - For the excellent documentation and framework
 - **Community** - For open-source libraries and tools
 

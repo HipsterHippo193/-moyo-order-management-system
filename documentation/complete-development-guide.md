@@ -1,4 +1,4 @@
-# Spring Boot Project Guide - Moyo OMS
+# Spring Boot Project Guide - Fuchs OMS
 
 **The Complete Guide to Understanding Your Order Management System**
 
@@ -31,7 +31,7 @@ Think of this project like building a house:
 | Concept | File | Purpose |
 |---------|------|---------|
 | Blueprint | `pom.xml` | Lists all materials and tools needed |
-| Foundation | `MoyoOmsApplication.java` | The starting point |
+| Foundation | `FuchsOmsApplication.java` | The starting point |
 | Settings | `application.yml` | How things should behave |
 | Rooms | The packages | Organized spaces for different code |
 
@@ -153,7 +153,7 @@ When you visit `http://localhost:8080/swagger-ui.html`:
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  Moyo Order Management System API                   │
+│  Fuchs Order Management System API                   │
 │  Version: 1.0.0                                     │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
@@ -224,13 +224,13 @@ This is a **Maven** file that manages dependencies.
 | `springdoc-openapi` | Creates Swagger UI to test your API |
 | `jjwt-*` | Create/verify JWT login tokens |
 
-### 2. MoyoOmsApplication.java - The On Switch
+### 2. FuchsOmsApplication.java - The On Switch
 
 ```java
 @SpringBootApplication
-public class MoyoOmsApplication {
+public class FuchsOmsApplication {
     public static void main(String[] args) {
-        SpringApplication.run(MoyoOmsApplication.class, args);
+        SpringApplication.run(FuchsOmsApplication.class, args);
     }
 }
 ```
@@ -245,7 +245,7 @@ This single annotation does 3 things:
 |-------------------|--------------|
 | `@Configuration` | "This class can define beans" |
 | `@EnableAutoConfiguration` | "Spring, configure things automatically" |
-| `@ComponentScan` | "Find all my classes under `com.moyo.oms`" |
+| `@ComponentScan` | "Find all my classes under `com.fuchs.oms`" |
 
 **Simple version:** This annotation tells Spring Boot to "figure out what I need and set it up for me."
 
@@ -270,7 +270,7 @@ spring:
     show-sql: true
 
 jwt:
-  secret: moyo-secret-key-change-in-production-for-real
+  secret: fuchs-secret-key-change-in-production-for-real
   expiration: 86400000  # 24 hours in milliseconds
 ```
 
@@ -1384,7 +1384,7 @@ class AllocationServiceIntegrationTest {
 | `docker-compose up --build` | Build and start |
 | `docker-compose up -d` | Start in background |
 | `docker-compose down` | Stop containers |
-| `docker-compose logs -f moyo-oms` | View live logs |
+| `docker-compose logs -f fuchs-oms` | View live logs |
 
 ### Key Files
 
@@ -1570,4 +1570,4 @@ You could enhance this system with:
 *Created: January 2026*
 *Last Updated: January 2026*
 *Covers: Complete implementation (Stories 1.x - 4.x)*
-*For: Moyo Order Management System*
+*For: Fuchs Order Management System*

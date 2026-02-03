@@ -1,4 +1,4 @@
-# Implementation Status
+# Fuchs OMS — Implementation Status
 
 > Quick reference for continuing development. See `roadmap.md` for the full feature list.
 

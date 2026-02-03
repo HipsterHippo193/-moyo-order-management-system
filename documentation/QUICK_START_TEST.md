@@ -12,7 +12,7 @@ This is a condensed version for rapid smoke testing. For comprehensive testing, 
 mvn spring-boot:run
 ```
 
-**Wait for**: `Started MoyoOmsApplication in X.XXX seconds`
+**Wait for**: `Started FuchsOmsApplication in X.XXX seconds`
 
 **Troubleshooting**: If you encounter any startup issues, see `START_GUIDE.md`
 

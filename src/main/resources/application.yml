@@ -3,9 +3,9 @@ server:
 
 spring:
   application:
-    name: moyo-oms
+    name: fuchs-oms
   datasource:
-    url: jdbc:h2:mem:moyodb
+    url: jdbc:h2:mem:fuchsdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -36,5 +36,5 @@ springdoc:
 #   jwt.secret: ${JWT_SECRET}
 #   jwt.expiration: ${JWT_EXPIRATION:3600000}
 jwt:
-  secret: moyo-oms-256-bit-secret-key-for-jwt-token-generation-min-32-chars
+  secret: fuchs-oms-256-bit-secret-key-for-jwt-token-generation-min-32-chars
   expiration: 3600000  # 1 hour in milliseconds

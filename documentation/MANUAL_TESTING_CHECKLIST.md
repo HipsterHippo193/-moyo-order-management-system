@@ -1,4 +1,4 @@
-# Moyo Order Management System - Manual Testing Checklist
+# Fuchs Order Management System - Manual Testing Checklist
 
 ## Before You Begin
 

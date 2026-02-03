@@ -5,7 +5,7 @@ export function render() {
   app.innerHTML = `
     <div class="login-wrapper">
       <div class="card login-card">
-        <h1>Moyo OMS</h1>
+        <h1>Fuchs OMS</h1>
         <div style="text-align:center;margin-bottom:0.5rem">
           <button id="login-theme-toggle" class="theme-toggle-inline" title="Toggle dark mode">${document.documentElement.getAttribute('data-theme') === 'dark' ? '🌙' : '☀️'}</button>
         </div>

@@ -1,5 +1,5 @@
 services:
-  moyo-oms:
+  fuchs-oms:
     build:
       context: .
       dockerfile: Dockerfile

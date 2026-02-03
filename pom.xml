@@ -11,8 +11,8 @@
 	<groupId>com.moyo</groupId>
 	<artifactId>oms</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>moyo-oms</name>
-	<description>Moyo Order Management System</description>
+	<name>fuchs-oms</name>
+	<description>Fuchs Order Management System</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>

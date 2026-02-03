@@ -1,6 +1,6 @@
 # Documentation
 
-This folder contains comprehensive documentation for the Moyo Order Management System.
+This folder contains comprehensive documentation for the Fuchs Order Management System.
 
 ## Quick Reference
 

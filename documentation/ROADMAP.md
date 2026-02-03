@@ -1,4 +1,4 @@
-# Moyo OMS — Feature Roadmap
+# Fuchs OMS — Feature Roadmap
 
 > Reference document for tracking feature expansion.
 > Update the status checkboxes as work is completed.
